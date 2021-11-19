@@ -18,6 +18,7 @@
     </ClInclude>
     <ClInclude Include="Structures.h" />
     <ClInclude Include="OBJLoader.h" />
+    <ClInclude Include="Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
@@ -27,6 +28,7 @@
       <Filter>Resource Files</Filter>
     </ClCompile>
     <ClCompile Include="OBJLoader.cpp" />
+    <ClCompile Include="Camera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">

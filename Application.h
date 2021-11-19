@@ -10,7 +10,7 @@
 #include "DDSTextureLoader.h"
 #include "OBJLoader.h"
 #include "Structures.h"
-
+#include "Camera.h"
 using namespace DirectX;
 
 struct ConstantBuffer
@@ -57,8 +57,8 @@ private:
 	ID3D11Buffer*           _pPlaneIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
 	XMFLOAT4X4              _world, _world2, _world3,_world4;
-	XMFLOAT4X4              _view;
-	XMFLOAT4X4              _projection;
+	//XMFLOAT4X4              _view;
+	//XMFLOAT4X4              _projection;
 	XMFLOAT3                lightDirection;
 	XMFLOAT4                diffuseMaterial;
 	XMFLOAT4                diffuseLight;
@@ -79,6 +79,10 @@ private:
 	MeshData                objPlane;
 	MeshData                objSphere;
 	float gTime;
+	Camera* _currentCamera;
+	Camera* _camera1;
+	Camera* _camera2;
+	
 
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);

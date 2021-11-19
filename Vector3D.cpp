@@ -219,17 +219,3 @@ void vector3d::disp()
 	cout << x << " " << y << " " << z << endl;
 
 }
-
-int main()
-{
-	vector3d V1 = vector3d(2, 5, 7); //constructs a vector
-
-	vector3d V2 = vector3d(3, 7, 10); //and another
-
-	vector3d V3 = V1 + V2; // adds them using overloaded operator
-
-	V3.disp(); //prints the new values
-
-	//provide the other operations.
-
-}
