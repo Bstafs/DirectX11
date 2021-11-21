@@ -46,9 +46,11 @@ private:
 	ID3D11DeviceContext*    _pImmediateContext;
 	IDXGISwapChain*         _pSwapChain;
 	ID3D11RenderTargetView* _pRenderTargetView;
+	//Shaders
 	ID3D11VertexShader*     _pVertexShader;
 	ID3D11PixelShader*      _pPixelShader;
 	ID3D11InputLayout*      _pVertexLayout;
+	//Buffers
 	ID3D11Buffer*           _pCubeVertexBuffer;
 	ID3D11Buffer*           _pCubeIndexBuffer;
 	ID3D11Buffer*           _pPyramidVertexBuffer;
@@ -56,9 +58,9 @@ private:
 	ID3D11Buffer*           _pPlaneVertexBuffer;
 	ID3D11Buffer*           _pPlaneIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
-	XMFLOAT4X4              _world, _world2, _world3,_world4;
-	//XMFLOAT4X4              _view;
-	//XMFLOAT4X4              _projection;
+	// World Object
+	XMFLOAT4X4              _world, _world2, _world3,_world4,_world5;
+	//Lighting
 	XMFLOAT3                lightDirection;
 	XMFLOAT4                diffuseMaterial;
 	XMFLOAT4                diffuseLight;
@@ -68,22 +70,23 @@ private:
 	XMFLOAT4                specularLight;
 	float                   specularPower;
 	XMFLOAT4                eyePos;
+	//Depth Buffers
 	ID3D11DepthStencilView* _depthStencilView;
 	ID3D11Texture2D*        _depthStencilBuffer;
 	ID3D11RasterizerState*  _wireFrame; 
 	ID3D11RasterizerState*  _solidFrame;
-
+	//Textures
 	ID3D11ShaderResourceView* _pTextureRV = nullptr;
 	ID3D11SamplerState* _pSamplerLinear = nullptr;
-
+	//Objects
 	MeshData                objPlane;
 	MeshData                objSphere;
+	//Time
 	float gTime;
+	// Camera
 	Camera* _currentCamera;
 	Camera* _camera1;
 	Camera* _camera2;
-	
-
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();
@@ -96,7 +99,6 @@ private:
 	HRESULT InitPyramidIndexBuffer();
 	HRESULT InitPlaneVertexBuffer();
 	HRESULT InitPlaneIndexBuffer();
-
 	UINT _WindowHeight;
 	UINT _WindowWidth;
 

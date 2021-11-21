@@ -29,7 +29,7 @@ cbuffer ConstantBuffer : register( b0 )
     
     float  SpecularPower;
     
-    
+ 
 }
 
 //--------------------------------------------------------------------------------------
@@ -37,7 +37,6 @@ struct VS_INPUT
 {
     float4 Pos : POSITION;
     float2 Tex : TEXCOORD0;
-    
 };
 
 
@@ -76,8 +75,7 @@ VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL, float4 Col : COLOR,
 	
 	
     // Commpute Specular
-   
-   
+  
     
     // Texture Shader
     
@@ -100,7 +98,8 @@ float4 PS( VS_OUTPUT input ) : SV_Target
     float3 ambient = AmbientMtrl * AmbientLight;
     float3 diffuse = DiffuseMtrl * AmbientLight;
     
-    float4 textureColour = txDiffuse.Sample(samLinear, input.Tex);
+    float4 textureColour = { 1, 1, 1, 1 };
+    textureColour = txDiffuse.Sample(samLinear, input.Tex);
     
     f.rbg = textureColour.rbg * (diffuse + ambient + specular);
     f.a = textureColour.a;

@@ -1,6 +1,5 @@
 #include "Application.h"
 
-
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -103,7 +102,6 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerLinear);
 
 	//OBJ Loader
-
 	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice, false);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
@@ -265,23 +263,22 @@ HRESULT Application::InitPlaneVertexBuffer()
 	// Create vertex buffer
 
 
-
-
-
 	SimpleVertex verticesPlane[] =
 	{
 
-			{ XMFLOAT3(-1.0f, 0.0f, 1.0f),   },
-			{ XMFLOAT3(1.0f,  0.0f,  1.0f),  },
-			{ XMFLOAT3(-1.0f, 0.0f, -1.0f), },
-			{ XMFLOAT3(1.0f, 0.0f, -1.0f),  },
+			{ XMFLOAT3(-1.0f, 0.0f, 1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,0.0f) }, // 0
+			{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f) }, // 1
+			{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,0.0f) }, // 2
+			{ XMFLOAT3(1.0f, 0.0f, -1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,1.0f) }, // 3
+			{ XMFLOAT3(3.0f, 0.0f, 1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,0.0f)  }, // 4
+			{ XMFLOAT3(3.0f,  0.0f,  -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f)},// 5
 
 	};
 
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 4;
+	bd.ByteWidth = sizeof(SimpleVertex) * 24;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
@@ -402,9 +399,14 @@ HRESULT Application::InitPlaneIndexBuffer()
 
 	WORD indicesPlane[] =
 	{
-		0,2,1,
-		1,2,3,
+		0,1,2,
+		2,1,3,
+
+		1,4,3,
+		3,4,5,
+
 	};
+
 
 
 	D3D11_BUFFER_DESC bd;
@@ -599,22 +601,25 @@ HRESULT Application::InitDevice()
 
 	InitShadersAndInputLayout();
 
+	//Call Vertex Buffers 
 	InitCubeVertexBuffer();
 	InitPyramidVertexBuffer();
+	InitPlaneVertexBuffer();
 
 	// Set vertex buffer
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pCubeVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
-
+	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPlaneVertexBuffer, &stride, &offset);
 	InitCubeIndexBuffer();
 	InitPyramidIndexBuffer();
+	InitPlaneIndexBuffer();
 
 	// Set index buffer
 	_pImmediateContext->IASetIndexBuffer(_pCubeIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 	_pImmediateContext->IASetIndexBuffer(_pPyramidVertexBuffer, DXGI_FORMAT_R16_UINT, 0);
-
+	_pImmediateContext->IASetIndexBuffer(_pPlaneVertexBuffer, DXGI_FORMAT_R16_UINT, 0);
 	// Set primitive topology
 	_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -626,7 +631,8 @@ HRESULT Application::InitDevice()
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
 	hr = _pd3dDevice->CreateBuffer(&bd, nullptr, &_pConstantBuffer);
-
+	
+	//Lighting Values
 	lightDirection = XMFLOAT3(0.25f, 0.5f, 1.0f);
 
 	diffuseMaterial = XMFLOAT4(0.8f, 0.5f, 0.5f, 1.0f);
@@ -657,17 +663,26 @@ HRESULT Application::InitDevice()
 	wfdesc2.CullMode = D3D11_CULL_NONE;
 	hr = _pd3dDevice->CreateRasterizerState(&wfdesc2, &_solidFrame);
 
-
 	if (FAILED(hr))
 		return hr;
 
-	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTextureRV);
+	//Texture Loading
+		hr = CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTextureRV);
+
+		if (FAILED(hr))
+			return hr;
+
+		_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureRV);
 
 
-	if (FAILED(hr))
-		return hr;
+		hr = CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureRV);
 
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureRV);
+		if (FAILED(hr))
+			return hr;
+
+
+		_pImmediateContext->PSSetShaderResources(0, 2, &_pTextureRV);
+	
 
 	return S_OK;
 }
@@ -726,6 +741,7 @@ void Application::Update()
 	// Animate the cube
 	//
 
+
 	XMStoreFloat4x4(&_world, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f));
 
 	XMStoreFloat4x4(&_world2, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t));
@@ -733,6 +749,8 @@ void Application::Update()
 	XMStoreFloat4x4(&_world3, XMMatrixTranslation(-5.0f, 8.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationZ(t));
 
 	XMStoreFloat4x4(&_world4, XMMatrixTranslation(0.0f, 0.0f, 20.0f));
+
+	XMStoreFloat4x4(&_world5, XMMatrixTranslation(0.0f, -4.0f, 0.0f));
 
 	if (GetAsyncKeyState('3'))
 		_currentCamera = _camera1;
@@ -835,9 +853,14 @@ void Application::Draw()
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(objPlane.IndexCount, 0, 0);
 
+	//Grid
+	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPlaneVertexBuffer, &stride3, &offset3);
+	_pImmediateContext->IASetIndexBuffer(_pPlaneIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-
-
+	world = XMLoadFloat4x4(&_world5);
+	cb.mWorld = XMMatrixTranspose(world);
+	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	_pImmediateContext->DrawIndexed(24, 0, 0);
 	//
 	// Present our back buffer to our front buffer
 	//
