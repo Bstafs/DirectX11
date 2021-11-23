@@ -634,7 +634,7 @@ HRESULT Application::InitDevice()
 	
 	//Lighting Values
 	lightDirection = XMFLOAT3(0.25f, 0.5f, 1.0f);
-
+	
 	diffuseMaterial = XMFLOAT4(0.8f, 0.5f, 0.5f, 1.0f);
 	diffuseLight = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
