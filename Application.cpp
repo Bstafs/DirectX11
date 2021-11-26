@@ -77,32 +77,33 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
 
-	/*// Initialize the view matrix
-	XMVECTOR Eye = XMVectorSet(0.0f, 10.0f, -20.0f, 0.0f);
-	XMVECTOR At = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-	XMStoreFloat4x4(&_view, XMMatrixLookAtLH(Eye, At, Up));
-
-	// Initialize the projection matrix
-	XMStoreFloat4x4(&_projection, XMMatrixPerspectiveFovLH(XM_PIDIV2, _WindowWidth / (FLOAT) _WindowHeight, 0.01f, 100.0f));*/
-
 	// Create the sample state
 
-	D3D11_SAMPLER_DESC sampDesc;
-	ZeroMemory(&sampDesc, sizeof(sampDesc));
-	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	sampDesc.MinLOD = 0;
-	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	_pd3dDevice->CreateSamplerState(&sampDesc, &_pSamplerLinear);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerLinear);
-
-	//OBJ Loader
+	D3D11_SAMPLER_DESC sampDescHercules;
+	ZeroMemory(&sampDescHercules, sizeof(sampDescHercules));
+	sampDescHercules.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDescHercules.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescHercules.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescHercules.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescHercules.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDescHercules.MinLOD = 0;
+	sampDescHercules.MaxLOD = D3D11_FLOAT32_MAX;
+	_pd3dDevice->CreateSamplerState(&sampDescHercules, &_pSamplerHercules);
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerHercules);
 	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice, false);
+
+
+	D3D11_SAMPLER_DESC sampDescCrate;
+	ZeroMemory(&sampDescCrate, sizeof(sampDescCrate));
+	sampDescCrate.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDescCrate.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescCrate.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescCrate.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescCrate.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDescCrate.MinLOD = 0;
+	sampDescCrate.MaxLOD = D3D11_FLOAT32_MAX;
+	_pd3dDevice->CreateSamplerState(&sampDescCrate, &_pSamplerCrate);
+	_pImmediateContext->PSSetSamplers(0, 2, &_pSamplerCrate);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
 	return S_OK;
@@ -270,8 +271,11 @@ HRESULT Application::InitPlaneVertexBuffer()
 			{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f) }, // 1
 			{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,0.0f) }, // 2
 			{ XMFLOAT3(1.0f, 0.0f, -1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,1.0f) }, // 3
+
 			{ XMFLOAT3(3.0f, 0.0f, 1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,0.0f)  }, // 4
-			{ XMFLOAT3(3.0f,  0.0f,  -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f)},// 5
+			{ XMFLOAT3(3.0f,  0.0f,  -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f)}, // 5
+
+
 
 	};
 
@@ -612,6 +616,7 @@ HRESULT Application::InitDevice()
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pCubeVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPlaneVertexBuffer, &stride, &offset);
+
 	InitCubeIndexBuffer();
 	InitPyramidIndexBuffer();
 	InitPlaneIndexBuffer();
@@ -639,10 +644,10 @@ HRESULT Application::InitDevice()
 	diffuseLight = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	ambientMaterial = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	ambientLight = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	ambientLight = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 
 	specularMaterial = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	specularLight = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	specularLight = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	specularPower = 2.0f;
 	eyePos = XMFLOAT4(0.0f, 0.0f, -10.0f, 0.0f);
 
@@ -667,25 +672,42 @@ HRESULT Application::InitDevice()
 		return hr;
 
 	//Texture Loading
-		hr = CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTextureRV);
+	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTextureCrate);
 
 		if (FAILED(hr))
 			return hr;
 
-		_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureRV);
+		_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureHercules);
 
 
-		hr = CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureRV);
+		hr = CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureCrate);
 
 		if (FAILED(hr))
 			return hr;
 
 
-		_pImmediateContext->PSSetShaderResources(0, 2, &_pTextureRV);
+		_pImmediateContext->PSSetShaderResources(0, 2, &_pTextureCrate);
 	
+		D3D11_BLEND_DESC blendDesc;
+		ZeroMemory(&blendDesc, sizeof(blendDesc));
+		D3D11_RENDER_TARGET_BLEND_DESC rtbd;
+		ZeroMemory(&rtbd, sizeof(rtbd));
+		rtbd.BlendEnable = true;
+		rtbd.SrcBlend = D3D11_BLEND_SRC_COLOR;
+		rtbd.DestBlend = D3D11_BLEND_BLEND_FACTOR;
+		rtbd.BlendOp = D3D11_BLEND_OP_ADD;
+		rtbd.SrcBlendAlpha = D3D11_BLEND_ONE;
+		rtbd.DestBlendAlpha = D3D11_BLEND_ZERO;
+		rtbd.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		rtbd.RenderTargetWriteMask = D3D10_COLOR_WRITE_ENABLE_ALL;
+		blendDesc.AlphaToCoverageEnable = false;
+		blendDesc.RenderTarget[0] = rtbd;
+		_pd3dDevice->CreateBlendState(&blendDesc, &Transparency);
 
 	return S_OK;
 }
+
+
 
 void Application::Cleanup()
 {
@@ -696,8 +718,6 @@ void Application::Cleanup()
 	if (_pCubeIndexBuffer) _pCubeIndexBuffer->Release();
 	if (_pPyramidVertexBuffer) _pPyramidVertexBuffer->Release();
 	if (_pPyramidIndexBuffer) _pPyramidIndexBuffer->Release();
-	//if (_pPlaneVertexBuffer) _pPlaneVertexBuffer->Release();
-	//if (_pPlaneIndexBuffer) _pPlaneIndexBuffer->Release();
 	if (_pVertexLayout) _pVertexLayout->Release();
 	if (_pVertexShader) _pVertexShader->Release();
 	if (_pPixelShader) _pPixelShader->Release();
@@ -709,7 +729,8 @@ void Application::Cleanup()
 	if (_depthStencilBuffer) _depthStencilBuffer->Release();
 	if (_wireFrame) _wireFrame->Release();
 	if (_solidFrame) _solidFrame->Release();
-
+	if (Transparency) Transparency->Release();
+		
 	//Continue Solid Objects
 }
 
@@ -756,10 +777,18 @@ void Application::Update()
 		_currentCamera = _camera1;
 	if (GetAsyncKeyState('4'))
 		_currentCamera = _camera2;
-	
 
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
+
+	if (GetAsyncKeyState('5'))
+	{
+		isTransparent = true;
+	}
+	if (GetAsyncKeyState('6'))
+	{
+		isTransparent = false;
+	}
 }
 
 void Application::Draw()
@@ -814,6 +843,16 @@ void Application::Draw()
 	_pImmediateContext->IASetIndexBuffer(objSphere.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
+	if (isTransparent == false)
+	{
+		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		_pImmediateContext->OMSetBlendState(Transparency, blendFactor, 0xffffffff);
+	}
+	if (isTransparent == true)
+	{
+		float blendFactor[] = { 0.9f, 0.9f, 0.9f, 0.0f };
+		_pImmediateContext->OMSetBlendState(Transparency, blendFactor, 0xffffffff);
+	}
 	//
 	// Renders a triangle
 	//
@@ -843,7 +882,6 @@ void Application::Draw()
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(36, 0, 0);
 
-
 	// Hercules Plane
 	_pImmediateContext->IASetVertexBuffers(0, 1, &objPlane.VertexBuffer, &stride3, &offset3);
 	_pImmediateContext->IASetIndexBuffer(objPlane.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
@@ -860,7 +898,7 @@ void Application::Draw()
 	world = XMLoadFloat4x4(&_world5);
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(24, 0, 0);
+	_pImmediateContext->DrawIndexed(96, 0, 0);
 	//
 	// Present our back buffer to our front buffer
 	//

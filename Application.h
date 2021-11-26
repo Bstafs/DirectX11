@@ -76,8 +76,11 @@ private:
 	ID3D11RasterizerState*  _wireFrame; 
 	ID3D11RasterizerState*  _solidFrame;
 	//Textures
-	ID3D11ShaderResourceView* _pTextureRV = nullptr;
-	ID3D11SamplerState* _pSamplerLinear = nullptr;
+	ID3D11ShaderResourceView* _pTextureHercules = nullptr;
+	ID3D11ShaderResourceView* _pTextureCrate = nullptr;
+
+	ID3D11SamplerState* _pSamplerHercules = nullptr;
+	ID3D11SamplerState* _pSamplerCrate = nullptr;
 	//Objects
 	MeshData                objPlane;
 	MeshData                objSphere;
@@ -87,6 +90,10 @@ private:
 	Camera* _currentCamera;
 	Camera* _camera1;
 	Camera* _camera2;
+	// Blending
+	ID3D11BlendState* Transparency;
+	bool isTransparent;
+	
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();
