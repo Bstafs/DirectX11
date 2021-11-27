@@ -11,6 +11,7 @@
 #include "OBJLoader.h"
 #include "Structures.h"
 #include "Camera.h"
+#include <vector>
 using namespace DirectX;
 
 struct ConstantBuffer
@@ -58,7 +59,7 @@ private:
 	ID3D11Buffer*           _pPlaneVertexBuffer;
 	ID3D11Buffer*           _pPlaneIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
-	// World Object
+	// World Object - Positions, Rotations and Scale
 	XMFLOAT4X4              _world, _world2, _world3,_world4,_world5;
 	//Lighting
 	XMFLOAT3                lightDirection;
@@ -75,12 +76,13 @@ private:
 	ID3D11Texture2D*        _depthStencilBuffer;
 	ID3D11RasterizerState*  _wireFrame; 
 	ID3D11RasterizerState*  _solidFrame;
+	//SamplerState
+	ID3D11SamplerState* _pSamplerState = nullptr;
 	//Textures
-	ID3D11ShaderResourceView* _pTextureHercules = nullptr;
 	ID3D11ShaderResourceView* _pTextureCrate = nullptr;
-
-	ID3D11SamplerState* _pSamplerHercules = nullptr;
-	ID3D11SamplerState* _pSamplerCrate = nullptr;
+	ID3D11ShaderResourceView* _pTextureHercules = nullptr;
+	ID3D11ShaderResourceView* _pTextureSun = nullptr;
+	ID3D11ShaderResourceView* _pTextureStone = nullptr;
 	//Objects
 	MeshData                objPlane;
 	MeshData                objSphere;
@@ -93,7 +95,6 @@ private:
 	// Blending
 	ID3D11BlendState* Transparency;
 	bool isTransparent;
-	
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();
@@ -117,5 +118,6 @@ public:
 
 	void Update();
 	void Draw();
+
 };
 

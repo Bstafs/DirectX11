@@ -40,8 +40,10 @@ Application::Application()
 	_pPyramidVertexBuffer = nullptr;
 	_pPlaneVertexBuffer = nullptr;
 	_pCubeIndexBuffer = nullptr;
+	_pPyramidIndexBuffer = nullptr;
+	_pPlaneIndexBuffer = nullptr;
 	_pConstantBuffer = nullptr;
-
+	
 }
 
 Application::~Application()
@@ -79,32 +81,20 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 
 	// Create the sample state
 
-	D3D11_SAMPLER_DESC sampDescHercules;
-	ZeroMemory(&sampDescHercules, sizeof(sampDescHercules));
-	sampDescHercules.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampDescHercules.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDescHercules.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDescHercules.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDescHercules.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	sampDescHercules.MinLOD = 0;
-	sampDescHercules.MaxLOD = D3D11_FLOAT32_MAX;
-	_pd3dDevice->CreateSamplerState(&sampDescHercules, &_pSamplerHercules);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerHercules);
+	D3D11_SAMPLER_DESC sampDesc;
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	_pd3dDevice->CreateSamplerState(&sampDesc, &_pSamplerState);
+
 	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice, false);
-
-
-	D3D11_SAMPLER_DESC sampDescCrate;
-	ZeroMemory(&sampDescCrate, sizeof(sampDescCrate));
-	sampDescCrate.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampDescCrate.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDescCrate.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDescCrate.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDescCrate.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	sampDescCrate.MinLOD = 0;
-	sampDescCrate.MaxLOD = D3D11_FLOAT32_MAX;
-	_pd3dDevice->CreateSamplerState(&sampDescCrate, &_pSamplerCrate);
-	_pImmediateContext->PSSetSamplers(0, 2, &_pSamplerCrate);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
+
 
 	return S_OK;
 }
@@ -226,13 +216,13 @@ HRESULT Application::InitPyramidVertexBuffer()
 	// Create vertex buffer
 	SimpleVertex verticesPyramid[] =
 	{
-		{ XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0,0)},
-		{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0,1) },
-		{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT2(1,0) },
-		 { XMFLOAT3(1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(1,1) },
+		{ XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(-1.0f, 0.0f, 1.0f), XMFLOAT2(0,0)},
+		{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(1,0) },
+		{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT2(0,1) },
+		{ XMFLOAT3(1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, -1.0f), XMFLOAT2(1,1) },
 
 
-		{ XMFLOAT3(0.0f, 3.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f) }, // point 4
+		{ XMFLOAT3(0.0f, 3.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0,0) }, // point 4
 
 
 	};
@@ -263,26 +253,20 @@ HRESULT Application::InitPlaneVertexBuffer()
 
 	// Create vertex buffer
 
-
 	SimpleVertex verticesPlane[] =
 	{
-
 			{ XMFLOAT3(-1.0f, 0.0f, 1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,0.0f) }, // 0
 			{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f) }, // 1
 			{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,0.0f) }, // 2
 			{ XMFLOAT3(1.0f, 0.0f, -1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,1.0f) }, // 3
-
-			{ XMFLOAT3(3.0f, 0.0f, 1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,0.0f)  }, // 4
-			{ XMFLOAT3(3.0f,  0.0f,  -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f)}, // 5
-
-
-
 	};
+
+
 
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 24;
+	bd.ByteWidth = sizeof(SimpleVertex) * 12;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
@@ -291,7 +275,6 @@ HRESULT Application::InitPlaneVertexBuffer()
 	InitData.pSysMem = verticesPlane;
 
 	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pPlaneVertexBuffer);
-
 
 
 	if (FAILED(hr))
@@ -396,8 +379,7 @@ HRESULT Application::InitPyramidIndexBuffer()
 
 HRESULT Application::InitPlaneIndexBuffer()
 {
-
-	HRESULT hr;
+    HRESULT hr;
 
 	// index buffer Plane
 
@@ -405,25 +387,20 @@ HRESULT Application::InitPlaneIndexBuffer()
 	{
 		0,1,2,
 		2,1,3,
-
-		1,4,3,
-		3,4,5,
-
 	};
-
 
 
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * 96;
+	bd.ByteWidth = sizeof(WORD) * 12;
 	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
-	InitData.pSysMem = indicesPlane;
+	InitData.pSysMem = &indicesPlane[0];
 	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pPlaneIndexBuffer);
 
 	if (FAILED(hr))
@@ -672,21 +649,21 @@ HRESULT Application::InitDevice()
 		return hr;
 
 	//Texture Loading
-	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTextureCrate);
+	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTextureHercules);
 
 		if (FAILED(hr))
 			return hr;
 
-		_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureHercules);
+	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureCrate);
 
+	if (FAILED(hr))
+		return hr;
 
-		hr = CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureCrate);
+	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Sun_COLOR.dds", nullptr, &_pTextureSun);
 
-		if (FAILED(hr))
-			return hr;
+	if (FAILED(hr))
+		return hr;
 
-
-		_pImmediateContext->PSSetShaderResources(0, 2, &_pTextureCrate);
 	
 		D3D11_BLEND_DESC blendDesc;
 		ZeroMemory(&blendDesc, sizeof(blendDesc));
@@ -704,6 +681,9 @@ HRESULT Application::InitDevice()
 		blendDesc.RenderTarget[0] = rtbd;
 		_pd3dDevice->CreateBlendState(&blendDesc, &Transparency);
 
+		if (FAILED(hr))
+			return hr;
+
 	return S_OK;
 }
 
@@ -718,6 +698,8 @@ void Application::Cleanup()
 	if (_pCubeIndexBuffer) _pCubeIndexBuffer->Release();
 	if (_pPyramidVertexBuffer) _pPyramidVertexBuffer->Release();
 	if (_pPyramidIndexBuffer) _pPyramidIndexBuffer->Release();
+	if (_pPlaneVertexBuffer) _pPlaneVertexBuffer->Release();
+	if (_pPlaneIndexBuffer) _pPlaneIndexBuffer->Release();
 	if (_pVertexLayout) _pVertexLayout->Release();
 	if (_pVertexShader) _pVertexShader->Release();
 	if (_pPixelShader) _pPixelShader->Release();
@@ -772,6 +754,7 @@ void Application::Update()
 	XMStoreFloat4x4(&_world4, XMMatrixTranslation(0.0f, 0.0f, 20.0f));
 
 	XMStoreFloat4x4(&_world5, XMMatrixTranslation(0.0f, -4.0f, 0.0f));
+
 
 	if (GetAsyncKeyState('3'))
 		_currentCamera = _camera1;
@@ -836,26 +819,28 @@ void Application::Draw()
 	cb.gTime = gTime;
 
 	// Set vertex buffer
-	UINT stride3 = sizeof(SimpleVertex);
-	UINT offset3 = 0;
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
 
-	_pImmediateContext->IASetVertexBuffers(0, 1, &objSphere.VertexBuffer, &stride3, &offset3);
+	_pImmediateContext->IASetVertexBuffers(0, 1, &objSphere.VertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(objSphere.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
 	if (isTransparent == false)
 	{
-		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		_pImmediateContext->OMSetBlendState(Transparency, blendFactor, 0xffffffff);
 	}
 	if (isTransparent == true)
 	{
-		float blendFactor[] = { 0.9f, 0.9f, 0.9f, 0.0f };
-		_pImmediateContext->OMSetBlendState(Transparency, blendFactor, 0xffffffff);
+		float blendFactor2[] = { 0.9f, 0.9f, 0.9f, 1.0f };
+		_pImmediateContext->OMSetBlendState(Transparency, blendFactor2, 0xffffffff);
 	}
 	//
 	// Renders a triangle
 	//
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureSun);
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
 	_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
 	_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
 	_pImmediateContext->PSSetConstantBuffers(0, 1, &_pConstantBuffer);
@@ -864,7 +849,9 @@ void Application::Draw()
 
 
 	// Pyramid
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride3, &offset3);
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
+	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pPyramidIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
@@ -874,7 +861,9 @@ void Application::Draw()
 	_pImmediateContext->DrawIndexed(18, 0, 0);
 
 	//Cube
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pCubeVertexBuffer, &stride3, &offset3);
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
+	_pImmediateContext->IASetVertexBuffers(0, 1, &_pCubeVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pCubeIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	world = XMLoadFloat4x4(&_world3);
@@ -883,7 +872,9 @@ void Application::Draw()
 	_pImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Hercules Plane
-	_pImmediateContext->IASetVertexBuffers(0, 1, &objPlane.VertexBuffer, &stride3, &offset3);
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureHercules);
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
+	_pImmediateContext->IASetVertexBuffers(0, 1, &objPlane.VertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(objPlane.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	world = XMLoadFloat4x4(&_world4);
@@ -892,15 +883,18 @@ void Application::Draw()
 	_pImmediateContext->DrawIndexed(objPlane.IndexCount, 0, 0);
 
 	//Grid
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPlaneVertexBuffer, &stride3, &offset3);
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
+	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPlaneVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pPlaneIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	world = XMLoadFloat4x4(&_world5);
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(96, 0, 0);
-	//
+	_pImmediateContext->DrawIndexed(12, 0, 0);
+
 	// Present our back buffer to our front buffer
 	//
 	_pSwapChain->Present(0, 0);
 }
+
