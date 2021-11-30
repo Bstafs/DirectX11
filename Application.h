@@ -82,7 +82,6 @@ private:
 	ID3D11ShaderResourceView* _pTextureCrate = nullptr;
 	ID3D11ShaderResourceView* _pTextureHercules = nullptr;
 	ID3D11ShaderResourceView* _pTextureSun = nullptr;
-	ID3D11ShaderResourceView* _pTextureStone = nullptr;
 	//Objects
 	MeshData                objPlane;
 	MeshData                objSphere;

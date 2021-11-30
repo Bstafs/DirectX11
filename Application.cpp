@@ -92,7 +92,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	_pd3dDevice->CreateSamplerState(&sampDesc, &_pSamplerState);
 
-	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice, false);
+	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
 
@@ -178,10 +178,10 @@ HRESULT Application::InitCubeVertexBuffer()
 		{ XMFLOAT3(-1.0f, -1.0f, 0.0f), XMFLOAT3(-0.666667f, -0.666667f, 0.333333f), XMFLOAT2(0,1)},//bottom left 2
 		{ XMFLOAT3(1.0f, -1.0f, 0.0f), XMFLOAT3(0.408248f, -0.408248f, 0.816497f), XMFLOAT2(1,1) },//bottom right 3
 
-		{ XMFLOAT3(-1.0f, 1.0f, 2.0f), XMFLOAT3(-0.816497f, 0.408248f, -0.408248f), XMFLOAT2(0,0)},//top left 4 
-		{ XMFLOAT3(1.0f, 1.0f, 2.0f), XMFLOAT3(0.333333f, 0.666667f, -0.666667f), XMFLOAT2(1,0) },//top right 5 
-		{ XMFLOAT3(-1.0f, -1.0f, 2.0f), XMFLOAT3(-0.408248f, -0.408248f, -0.816497f), XMFLOAT2(0,1) },//bottom left 6 
-		{ XMFLOAT3(1.0f, -1.0f, 2.0f), XMFLOAT3(0.666667f, -0.666667f, -0.333333f), XMFLOAT2(1,1) },//bottom right 7
+		{ XMFLOAT3(-1.0f, 1.0f, 2.0f), XMFLOAT3(-0.816497f, 0.408248f, -0.408248f), XMFLOAT2(1,1)},//top left 4 
+		{ XMFLOAT3(1.0f, 1.0f, 2.0f), XMFLOAT3(0.333333f, 0.666667f, -0.666667f), XMFLOAT2(0,1) },//top right 5 
+		{ XMFLOAT3(-1.0f, -1.0f, 2.0f), XMFLOAT3(-0.408248f, -0.408248f, -0.816497f), XMFLOAT2(1,0) },//bottom left 6 
+		{ XMFLOAT3(1.0f, -1.0f, 2.0f), XMFLOAT3(0.666667f, -0.666667f, -0.333333f), XMFLOAT2(0,0) },//bottom right 7
 
 
 	};
@@ -216,10 +216,10 @@ HRESULT Application::InitPyramidVertexBuffer()
 	// Create vertex buffer
 	SimpleVertex verticesPyramid[] =
 	{
-		{ XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(-1.0f, 0.0f, 1.0f), XMFLOAT2(0,0)},
-		{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(1,0) },
-		{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT2(0,1) },
-		{ XMFLOAT3(1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, -1.0f), XMFLOAT2(1,1) },
+		{ XMFLOAT3(-1.0f, 0.0f,  1.0f), XMFLOAT3(-1.0f, 0.0f, 1.0f), XMFLOAT2(1,1)},
+		{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(0,1) },
+		{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT2(1,0) },
+		{ XMFLOAT3(1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, -1.0f), XMFLOAT2(0,0) },
 
 
 		{ XMFLOAT3(0.0f, 3.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0,0) }, // point 4
@@ -431,7 +431,7 @@ HRESULT Application::InitWindow(HINSTANCE hInstance, int nCmdShow)
 
 	// Create window
 	_hInst = hInstance;
-	RECT rc = { 0, 0, 640, 480 };
+	RECT rc = { 0, 0, 1920, 1080 };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	_hWnd = CreateWindow(L"TutorialWindowClass", L"DX11 Framework", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
@@ -664,7 +664,6 @@ HRESULT Application::InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	
 		D3D11_BLEND_DESC blendDesc;
 		ZeroMemory(&blendDesc, sizeof(blendDesc));
 		D3D11_RENDER_TARGET_BLEND_DESC rtbd;
@@ -746,15 +745,10 @@ void Application::Update()
 
 
 	XMStoreFloat4x4(&_world, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f));
-
 	XMStoreFloat4x4(&_world2, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t));
-
 	XMStoreFloat4x4(&_world3, XMMatrixTranslation(-5.0f, 8.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationZ(t));
-
 	XMStoreFloat4x4(&_world4, XMMatrixTranslation(0.0f, 0.0f, 20.0f));
-
 	XMStoreFloat4x4(&_world5, XMMatrixTranslation(0.0f, -4.0f, 0.0f));
-
 
 	if (GetAsyncKeyState('3'))
 		_currentCamera = _camera1;
@@ -849,7 +843,7 @@ void Application::Draw()
 
 
 	// Pyramid
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureSun);
 	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pPyramidIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
