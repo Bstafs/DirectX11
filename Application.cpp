@@ -738,23 +738,27 @@ void Application::Update()
 	}
 
 	gTime = t;
-
-	//
+	
+    //
 	// Animate the cube
 	//
+	
 
 
-	XMStoreFloat4x4(&_world, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f));
-	XMStoreFloat4x4(&_world2, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t));
-	XMStoreFloat4x4(&_world3, XMMatrixTranslation(-5.0f, 8.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationZ(t));
-	XMStoreFloat4x4(&_world4, XMMatrixTranslation(0.0f, 0.0f, 20.0f));
-	XMStoreFloat4x4(&_world5, XMMatrixTranslation(0.0f, -4.0f, 0.0f));
+	XMStoreFloat4x4(&_world, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f)); // Sphere
+	XMStoreFloat4x4(&_world2, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t)); // Pyramid
+	XMStoreFloat4x4(&_world3, XMMatrixTranslation(-5.0f, 8.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationZ(t)); // Cube
+	XMStoreFloat4x4(&_world4, XMMatrixTranslation(0.0f, 0.0f, 20.0f)); // Hercules Plane
+	XMStoreFloat4x4(&_world5, XMMatrixTranslation(0.0f, -4.0f, 0.0f)); // Grid
 
 	if (GetAsyncKeyState('3'))
+	{
 		_currentCamera = _camera1;
+	}
 	if (GetAsyncKeyState('4'))
+	{
 		_currentCamera = _camera2;
-
+	}
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
 
@@ -766,6 +770,8 @@ void Application::Update()
 	{
 		isTransparent = false;
 	}
+
+
 }
 
 void Application::Draw()
