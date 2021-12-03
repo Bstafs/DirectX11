@@ -60,7 +60,7 @@ private:
 	ID3D11Buffer*           _pPlaneIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
 	// World Object - Positions, Rotations and Scale
-	XMFLOAT4X4              _world, _world2, _world3,_world4,_world5;
+	XMFLOAT4X4              sphere, pyramid, cube,hercules,grid,car;
 	//Lighting
 	XMFLOAT3                lightDirection;
 	XMFLOAT4                diffuseMaterial;
@@ -85,15 +85,24 @@ private:
 	//Objects
 	MeshData                objPlane;
 	MeshData                objSphere;
+	MeshData                objCar;
 	//Time
 	float gTime;
 	// Camera
 	Camera* _currentCamera;
 	Camera* _camera1;
 	Camera* _camera2;
+	Camera* _carCamera;
 	// Blending
 	ID3D11BlendState* Transparency;
 	bool isTransparent;
+	// Car
+	float speed;
+	XMFLOAT3 carPosition;
+	float currentPosZ;
+	float currentPosX;
+	float rotationX;
+	XMMATRIX carMatrix;
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();

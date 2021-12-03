@@ -751,28 +751,24 @@ void Application::Update()
 
 	_currentCamera->Update();
 
-	if (GetAsyncKeyState('W'))
+	if (GetAsyncKeyState(0x57))
 	{
-		currentPosZ += 0.002f * cos(rotationX);
-		currentPosX += 0.002f * sin(rotationX);
+		currentPosZ += 0.002f;
 	}
-	if (GetAsyncKeyState('S'))
+	if (GetAsyncKeyState(0x53))
 	{
-		currentPosZ -= 0.002f * cos(rotationX);
-		currentPosX -= 0.002f * sin(rotationX);
+		currentPosZ -= 0.002f;
 	}
-	if (GetAsyncKeyState('D'))
+	if (GetAsyncKeyState(0x41))
 	{
 		rotationX -= 0.0002f;
 	}
-	if (GetAsyncKeyState('A'))
+	if (GetAsyncKeyState(0x44))
 	{
 		rotationX += 0.0002f;
 	}
 
-	_carCamera->SetPosition(XMFLOAT3(currentPosX - cos(rotationX), 2, currentPosZ - sin(rotationX)));
-	_carCamera->SetLookAt(XMFLOAT3(currentPosX,0.0f, currentPosZ));
-	_carCamera->SetView();
+
 
 	XMMATRIX translation;
 	XMMATRIX rotation;
@@ -780,17 +776,12 @@ void Application::Update()
 	translation	= XMMatrixTranslation(currentPosX, carPosition.y,currentPosZ);
 	rotation = XMMatrixRotationY(rotationX);
 
-	//direction.x = 1 * cos(rotationAngle);
-	//direction.z = 1 * sin(rotationAngle);
-
 	XMStoreFloat4x4(&sphere, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f)); // Sphere
 	XMStoreFloat4x4(&pyramid, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t)); // Pyramid
 	XMStoreFloat4x4(&cube, XMMatrixTranslation(-5.0f, 8.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationZ(t)); // Cube
 	XMStoreFloat4x4(&hercules, XMMatrixTranslation(0.0f, 0.0f, 20.0f)); // Hercules Plane
 	XMStoreFloat4x4(&grid, XMMatrixTranslation(0.0f, -4.0f, 0.0f)); // Grid
 	XMStoreFloat4x4(&car, XMMatrixScaling(0.1f, 0.1f, 0.1f) * rotation * translation); // Car
-
-
 
 	if (GetAsyncKeyState('3'))
 	{
