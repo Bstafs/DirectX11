@@ -753,13 +753,11 @@ void Application::Update()
 
 	if (GetAsyncKeyState('W'))
 	{
-		currentPosZ += 0.002f * cos(rotationX);
-		currentPosX += 0.002f * sin(rotationX);
+		currentPosZ += 0.002f;
 	}
 	if (GetAsyncKeyState('S'))
 	{
-		currentPosZ -= 0.002f * cos(rotationX);
-		currentPosX -= 0.002f * sin(rotationX);
+		currentPosZ -= 0.002f;
 	}
 	if (GetAsyncKeyState('D'))
 	{
@@ -770,9 +768,7 @@ void Application::Update()
 		rotationX += 0.0002f;
 	}
 
-	_carCamera->SetPosition(XMFLOAT3(currentPosX - cos(rotationX), 2, currentPosZ - sin(rotationX)));
-	_carCamera->SetLookAt(XMFLOAT3(currentPosX,0.0f, currentPosZ));
-	_carCamera->SetView();
+	_carCamera->SetPosition(XMFLOAT3(carPosition.x - cos(rotationX), carPosition.y + 2, carPosition.z - sin(rotationX)));
 
 	XMMATRIX translation;
 	XMMATRIX rotation;
