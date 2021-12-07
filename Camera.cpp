@@ -40,7 +40,7 @@ XMFLOAT3 Camera::GetLookAt()
 
 void Camera::SetLookAt(XMFLOAT3 atPosition)
 {
-	_at = atPosition;
+	atPosition = atPosition;
 }
 
 XMFLOAT3 Camera::GetUp()

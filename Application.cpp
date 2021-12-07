@@ -71,11 +71,10 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	}
 
 	// Initialize the world matrix
-	XMStoreFloat4x4(&sphere, XMMatrixIdentity());
+	XMStoreFloat4x4(&_world, XMMatrixIdentity());
 
 	_camera1 = new Camera(XMFLOAT3(0.0f, 10.0f, -20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 100.0f);
 	_camera2 = new Camera(XMFLOAT3(0.0f, 10.0f, 20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 100.0f);
-	_carCamera = new Camera(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 100.0f);
 	_currentCamera = _camera1;
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
@@ -94,7 +93,6 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_pd3dDevice->CreateSamplerState(&sampDesc, &_pSamplerState);
 
 	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice);
-	objCar = OBJLoader::Load("car.obj", _pd3dDevice);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
 
@@ -630,13 +628,6 @@ HRESULT Application::InitDevice()
 	specularPower = 2.0f;
 	eyePos = XMFLOAT4(0.0f, 0.0f, -10.0f, 0.0f);
 
-	// Car Position
-	speed = 0.5f;
-	currentPosZ = 10.0f;
-	currentPosX = 0.0f;
-	rotationX = 0.0f;
-	carPosition = XMFLOAT3(currentPosX,-40.0f,currentPosZ);
-
 	// Rasterizer Structure For Wire Frame
 	D3D11_RASTERIZER_DESC wfdesc;
 	ZeroMemory(&wfdesc, sizeof(D3D11_RASTERIZER_DESC));
@@ -747,50 +738,18 @@ void Application::Update()
 	}
 
 	gTime = t;
+	
+    //
+	// Animate the cube
+	//
+	
 
 
-	_currentCamera->Update();
-
-	if (GetAsyncKeyState('W'))
-	{
-		currentPosZ += 0.002f * cos(rotationX);
-		currentPosX += 0.002f * sin(rotationX);
-	}
-	if (GetAsyncKeyState('S'))
-	{
-		currentPosZ -= 0.002f * cos(rotationX);
-		currentPosX -= 0.002f * sin(rotationX);
-	}
-	if (GetAsyncKeyState('D'))
-	{
-		rotationX -= 0.0002f;
-	}
-	if (GetAsyncKeyState('A'))
-	{
-		rotationX += 0.0002f;
-	}
-
-	_carCamera->SetPosition(XMFLOAT3(currentPosX - cos(rotationX), 2, currentPosZ - sin(rotationX)));
-	_carCamera->SetLookAt(XMFLOAT3(currentPosX,0.0f, currentPosZ));
-	_carCamera->SetView();
-
-	XMMATRIX translation;
-	XMMATRIX rotation;
-	translation = XMMatrixIdentity();
-	translation	= XMMatrixTranslation(currentPosX, carPosition.y,currentPosZ);
-	rotation = XMMatrixRotationY(rotationX);
-
-	//direction.x = 1 * cos(rotationAngle);
-	//direction.z = 1 * sin(rotationAngle);
-
-	XMStoreFloat4x4(&sphere, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f)); // Sphere
-	XMStoreFloat4x4(&pyramid, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t)); // Pyramid
-	XMStoreFloat4x4(&cube, XMMatrixTranslation(-5.0f, 8.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationZ(t)); // Cube
-	XMStoreFloat4x4(&hercules, XMMatrixTranslation(0.0f, 0.0f, 20.0f)); // Hercules Plane
-	XMStoreFloat4x4(&grid, XMMatrixTranslation(0.0f, -4.0f, 0.0f)); // Grid
-	XMStoreFloat4x4(&car, XMMatrixScaling(0.1f, 0.1f, 0.1f) * rotation * translation); // Car
-
-
+	XMStoreFloat4x4(&_world, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f)); // Sphere
+	XMStoreFloat4x4(&_world2, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t)); // Pyramid
+	XMStoreFloat4x4(&_world3, XMMatrixTranslation(-5.0f, 8.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationZ(t)); // Cube
+	XMStoreFloat4x4(&_world4, XMMatrixTranslation(0.0f, 0.0f, 20.0f)); // Hercules Plane
+	XMStoreFloat4x4(&_world5, XMMatrixTranslation(0.0f, -4.0f, 0.0f)); // Grid
 
 	if (GetAsyncKeyState('3'))
 	{
@@ -799,20 +758,15 @@ void Application::Update()
 	if (GetAsyncKeyState('4'))
 	{
 		_currentCamera = _camera2;
-	}	
-	if (GetAsyncKeyState('5'))
-	{
-		_currentCamera = _carCamera;
 	}
-
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
 
-	if (GetAsyncKeyState('6'))
+	if (GetAsyncKeyState('5'))
 	{
 		isTransparent = true;
 	}
-	if (GetAsyncKeyState('7'))
+	if (GetAsyncKeyState('6'))
 	{
 		isTransparent = false;
 	}
@@ -829,7 +783,7 @@ void Application::Draw()
 	_pImmediateContext->ClearRenderTargetView(_pRenderTargetView, ClearColor);
 	_pImmediateContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	XMMATRIX world = XMLoadFloat4x4(&sphere);
+	XMMATRIX world = XMLoadFloat4x4(&_world);
 	XMMATRIX view = XMLoadFloat4x4(_currentCamera->GetView());
 	XMMATRIX projection = XMLoadFloat4x4(_currentCamera->GetProjection());
 	//
@@ -895,13 +849,13 @@ void Application::Draw()
 
 
 	// Pyramid
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureSun);
 	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pPyramidIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
-	world = XMLoadFloat4x4(&pyramid);
+	world = XMLoadFloat4x4(&_world2);
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(18, 0, 0);
@@ -912,7 +866,7 @@ void Application::Draw()
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pCubeVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pCubeIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	world = XMLoadFloat4x4(&cube);
+	world = XMLoadFloat4x4(&_world3);
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(36, 0, 0);
@@ -923,7 +877,7 @@ void Application::Draw()
 	_pImmediateContext->IASetVertexBuffers(0, 1, &objPlane.VertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(objPlane.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	world = XMLoadFloat4x4(&hercules);
+	world = XMLoadFloat4x4(&_world4);
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(objPlane.IndexCount, 0, 0);
@@ -934,19 +888,10 @@ void Application::Draw()
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPlaneVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pPlaneIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-	world = XMLoadFloat4x4(&grid);
+	world = XMLoadFloat4x4(&_world5);
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(12, 0, 0);
-
-	//Car
-	_pImmediateContext->IASetVertexBuffers(0, 1, &objCar.VertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(objCar.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-	world = XMLoadFloat4x4(&car);
-	cb.mWorld = XMMatrixTranspose(world);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(objCar.IndexCount, 0, 0);
 
 	// Present our back buffer to our front buffer
 	//
