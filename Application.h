@@ -103,6 +103,14 @@ private:
 	float currentPosX;
 	float rotationX;
 	XMMATRIX carMatrix;
+	//Terrain 
+	int rows;
+	int columns;
+	int totalCells;
+	int totalFaces;
+	int totalVertices;
+	float mapWidth;
+	float mapHeight;
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();
