@@ -62,7 +62,7 @@ private:
 	ID3D11Buffer*           _pgridIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
 	// World Object - Positions, Rotations and Scale
-	XMFLOAT4X4              sphere, pyramid, cube,hercules,grid,car,terrain;
+	XMFLOAT4X4              sphere, pyramid, cube,hercules,car,terrain;
 	//Lighting
 	XMFLOAT3                lightDirection;
 	XMFLOAT4                diffuseMaterial;
@@ -129,8 +129,6 @@ private:
 	HRESULT InitCubeIndexBuffer();
 	HRESULT InitPyramidVertexBuffer();
 	HRESULT InitPyramidIndexBuffer();
-	HRESULT InitPlaneVertexBuffer();
-	HRESULT InitPlaneIndexBuffer();
 	HRESULT CreatGrid(float rows, float columns, float width, float depth);
 	UINT _WindowHeight;
 	UINT _WindowWidth;
