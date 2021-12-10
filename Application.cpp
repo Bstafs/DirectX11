@@ -721,8 +721,6 @@ void Application::Update()
 	XMStoreFloat4x4(&car, XMMatrixScaling(0.1f, 0.1f, 0.1f) * rotation * translation); // Car
 	XMStoreFloat4x4(&terrain, XMMatrixTranslation(0.0f,-12.0f,0.0f)); // Car
 
-
-
 	if (GetAsyncKeyState('3'))
 	{
 		_currentCamera = _camera1;
