@@ -73,9 +73,9 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	// Initialize the world matrix
 	XMStoreFloat4x4(&sphere, XMMatrixIdentity());
 
-	_camera1 = new Camera(XMFLOAT3(0.0f, 10.0f, -20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 100.0f);
-	_camera2 = new Camera(XMFLOAT3(0.0f, 10.0f, 20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 100.0f);
-	_carCamera = new Camera(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 100.0f);
+	_camera1 = new Camera(XMFLOAT3(0.0f, 10.0f, -20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
+	_camera2 = new Camera(XMFLOAT3(0.0f, 10.0f, 20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
+	_carCamera = new Camera(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
 	_currentCamera = _camera1;
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
@@ -97,6 +97,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	objCar = OBJLoader::Load("car.obj", _pd3dDevice);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
+	Application::CreatGrid(128, 128, 128, 128);
 
 	return S_OK;
 }
@@ -184,8 +185,6 @@ HRESULT Application::InitCubeVertexBuffer()
 		{ XMFLOAT3(1.0f, 1.0f, 2.0f), XMFLOAT3(0.333333f, 0.666667f, -0.666667f), XMFLOAT2(0,1) },//top right 5 
 		{ XMFLOAT3(-1.0f, -1.0f, 2.0f), XMFLOAT3(-0.408248f, -0.408248f, -0.816497f), XMFLOAT2(1,0) },//bottom left 6 
 		{ XMFLOAT3(1.0f, -1.0f, 2.0f), XMFLOAT3(0.666667f, -0.666667f, -0.333333f), XMFLOAT2(0,0) },//bottom right 7
-
-
 	};
 
 
@@ -255,16 +254,16 @@ HRESULT Application::InitPlaneVertexBuffer()
 
 	// Create vertex buffer
 
-	SimpleVertex verticesPlane[] =
-	{
-			{ XMFLOAT3(-1.0f, 0.0f, 1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,0.0f) }, // 0
-			{ XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f) }, // 1
-			{ XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,0.0f) }, // 2
-			{ XMFLOAT3(1.0f, 0.0f, -1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,1.0f) }, // 3
-	};
 
+			SimpleVertex verticesPlane[] =
+			{
+				  { XMFLOAT3(-1.0f, 0.0f, 1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,0.0f) }, // 0
+				  { XMFLOAT3(1.0f,  0.0f,  1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(0.0f,1.0f) }, // 1
+				  { XMFLOAT3(-1.0f, 0.0f, -1.0f), XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,0.0f) }, // 2
+				  { XMFLOAT3(1.0f, 0.0f, -1.0f),  XMFLOAT3(1.0f,1.0f,1.0f), XMFLOAT2(1.0f,1.0f) }, // 3
+			};
 
-
+		
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -708,6 +707,8 @@ void Application::Cleanup()
 	if (_pPyramidIndexBuffer) _pPyramidIndexBuffer->Release();
 	if (_pPlaneVertexBuffer) _pPlaneVertexBuffer->Release();
 	if (_pPlaneIndexBuffer) _pPlaneIndexBuffer->Release();
+	if (_pgridVertexBuffer) _pgridVertexBuffer->Release();
+	if (_pgridIndexBuffer) _pgridIndexBuffer->Release();
 	if (_pVertexLayout) _pVertexLayout->Release();
 	if (_pVertexShader) _pVertexShader->Release();
 	if (_pPixelShader) _pPixelShader->Release();
@@ -761,11 +762,11 @@ void Application::Update()
 		currentPosZ -= 0.002f * cos(rotationX);
 		currentPosX -= 0.002f * sin(rotationX);
 	}
-	if (GetAsyncKeyState('D'))
+	if (GetAsyncKeyState('A'))
 	{
 		rotationX -= 0.0002f;
 	}
-	if (GetAsyncKeyState('A'))
+	if (GetAsyncKeyState('D'))
 	{
 		rotationX += 0.0002f;
 	}
@@ -789,6 +790,7 @@ void Application::Update()
 	XMStoreFloat4x4(&hercules, XMMatrixTranslation(0.0f, 0.0f, 20.0f)); // Hercules Plane
 	XMStoreFloat4x4(&grid, XMMatrixTranslation(0.0f, -4.0f, 0.0f)); // Grid
 	XMStoreFloat4x4(&car, XMMatrixScaling(0.1f, 0.1f, 0.1f) * rotation * translation); // Car
+	XMStoreFloat4x4(&terrain, XMMatrixTranslation(0.0f,-0.0f,0.0f)); // Car
 
 
 
@@ -948,8 +950,109 @@ void Application::Draw()
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	_pImmediateContext->DrawIndexed(objCar.IndexCount, 0, 0);
 
+	//Terrain
+	_pImmediateContext->IASetVertexBuffers(0, 1, &_pgridVertexBuffer, &stride, &offset);
+	_pImmediateContext->IASetIndexBuffer(_pgridIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+	world = XMLoadFloat4x4(&terrain);
+	cb.mWorld = XMMatrixTranspose(world);
+	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	_pImmediateContext->DrawIndexed(m_totalIndices, 0, 0);
+
 	// Present our back buffer to our front buffer
 	//
 	_pSwapChain->Present(0, 0);
 }
 
+HRESULT Application::CreatGrid(float rows, float columns, float width, float depth)
+{
+	HRESULT hr;
+
+	m_rows = rows;
+	m_columns = columns;
+	m_depth = depth;
+	m_width = width;
+
+	m_rows = m_rows - 1;
+	m_columns = m_columns - 1;
+	m_totalCells = (m_rows - 1) * (m_columns - 1);
+	m_totalIndices = (m_rows - 1) * (m_columns - 1) * 2 * 6;
+	m_totalVertices = m_rows * m_columns;
+
+	dx = m_width / (m_columns - 1);
+	dz = m_depth / (m_rows - 1);
+
+	 du = 1.0f / (m_columns - 1);
+	 dv = 1.0f / (m_rows - 1);
+
+	std::vector<SimpleVertex> v(m_totalVertices);
+
+	// Vertex Generation
+	for (int i = 0; i < m_rows; i++)
+	{
+		for (int j = 0; j < m_columns; j++)
+		{
+			v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx, 0.0, (0.5 * m_depth) - (float)i * dz);
+			v[i * m_columns + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+
+			v[i * m_columns + j].TexC.x = j * du;
+			v[i * m_columns + j].TexC.y = i * dv;
+
+		}
+	}
+
+	std::vector<WORD> indices(m_totalIndices * 3);
+	//SHRT_MAX
+	int k = 0;
+	// Index Generation
+	for (UINT i = 0; i < m_rows - 1; i++)
+	{
+		for (UINT j = 0; j < m_columns -1; j++)
+		{
+			indices[k] = i * m_columns + j;
+			indices[k + 1] = i * m_columns + j + 1;
+			indices[k + 2] = (i + 1)* m_columns + j;
+
+			indices[k + 3] = (i + 1) * m_columns + j;
+			indices[k + 4] = i * m_columns + j + 1;
+			indices[k + 5] = (i + 1) * m_columns + j + 1;
+			
+			k += 6;
+		}
+	}
+
+	// Vertex Buffer
+	D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(bd));
+	bd.Usage = D3D11_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof(SimpleVertex) * v.size();
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA InitData;
+	ZeroMemory(&InitData, sizeof(InitData));
+	InitData.pSysMem = &v[0];
+	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pgridVertexBuffer);
+
+	if (FAILED(hr))
+		return hr;
+
+	// Index Buffer
+	D3D11_BUFFER_DESC bd2;
+	ZeroMemory(&bd2, sizeof(bd2));
+
+	bd2.Usage = D3D11_USAGE_DEFAULT;
+	bd2.ByteWidth = sizeof(WORD) * indices.size();
+	bd2.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bd2.CPUAccessFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA InitData2;
+	ZeroMemory(&InitData2, sizeof(InitData2));
+	InitData2.pSysMem = &indices[0];
+	hr = _pd3dDevice->CreateBuffer(&bd2, &InitData2, &_pgridIndexBuffer);
+
+	if (FAILED(hr))
+		return hr;
+
+	return hr;
+}

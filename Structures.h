@@ -19,9 +19,3 @@ struct SimpleVertex
 		return memcmp((void*)this, (void*)&other, sizeof(SimpleVertex)) > 0;
 	};
 };
-
-struct GridInfo
-{
-	int mapHeight;
-	int mapWidth;
-};

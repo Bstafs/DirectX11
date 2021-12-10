@@ -58,9 +58,11 @@ private:
 	ID3D11Buffer*           _pPyramidIndexBuffer;
 	ID3D11Buffer*           _pPlaneVertexBuffer;
 	ID3D11Buffer*           _pPlaneIndexBuffer;
+	ID3D11Buffer*           _pgridVertexBuffer;
+	ID3D11Buffer*           _pgridIndexBuffer;
 	ID3D11Buffer*           _pConstantBuffer;
 	// World Object - Positions, Rotations and Scale
-	XMFLOAT4X4              sphere, pyramid, cube,hercules,grid,car;
+	XMFLOAT4X4              sphere, pyramid, cube,hercules,grid,car,terrain;
 	//Lighting
 	XMFLOAT3                lightDirection;
 	XMFLOAT4                diffuseMaterial;
@@ -103,14 +105,20 @@ private:
 	float currentPosX;
 	float rotationX;
 	XMMATRIX carMatrix;
-	//Terrain 
-	int rows;
-	int columns;
-	int totalCells;
-	int totalFaces;
-	int totalVertices;
-	float mapWidth;
-	float mapHeight;
+	// Terrain
+	int m_rows;
+	UINT m_columns;
+	int m_totalCells;
+	UINT m_totalIndices;
+	int m_totalVertices;
+	int m_depth;
+	int m_width;
+	// Width & Depth
+	float dx;
+	float dz;
+	//Texture Coords
+	float du;
+	float dv;
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();
@@ -123,6 +131,7 @@ private:
 	HRESULT InitPyramidIndexBuffer();
 	HRESULT InitPlaneVertexBuffer();
 	HRESULT InitPlaneIndexBuffer();
+	HRESULT CreatGrid(float rows, float columns, float width, float depth);
 	UINT _WindowHeight;
 	UINT _WindowWidth;
 
