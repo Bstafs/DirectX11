@@ -686,7 +686,7 @@ void Application::Update()
 	if (GetAsyncKeyState('W'))
 	{
 		currentPosZ += 0.002f * cos(rotationX);
-		currentPosX += 0.002f * sin(rotationX);
+		currentPosX += 0.002f  * sin(rotationX);
 	}
 	if (GetAsyncKeyState('S'))
 	{
@@ -701,8 +701,7 @@ void Application::Update()
 	{
 		rotationX += 0.0002f;
 	}
-
-	_carCamera->SetPosition(XMFLOAT3(currentPosX - sin(rotationX), 2, currentPosZ - cos(rotationX)));
+	_carCamera->SetPosition(XMFLOAT3(currentPosX - sin(rotationX), 1.4, currentPosZ - cos(rotationX)));
 	_carCamera->SetLookAt(XMFLOAT3(currentPosX,0.0f, currentPosZ));
 	_carCamera->SetView();
 
