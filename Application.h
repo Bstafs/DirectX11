@@ -12,6 +12,8 @@
 #include "Structures.h"
 #include "Camera.h"
 #include <vector>
+#include <fstream>
+#include <iostream>
 using namespace DirectX;
 
 struct ConstantBuffer
@@ -119,6 +121,9 @@ private:
 	//Texture Coords
 	float du;
 	float dv;
+	// Height map
+	XMFLOAT3* heightMap;
+
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();
@@ -129,7 +134,8 @@ private:
 	HRESULT InitCubeIndexBuffer();
 	HRESULT InitPyramidVertexBuffer();
 	HRESULT InitPyramidIndexBuffer();
-	HRESULT CreatGrid(float rows, float columns, float width, float depth);
+	HRESULT CreatGrid(float rows, float columns, float width, float depth, char* filename);
+	/*bool HeightMapLoad(char* filename);*/
 	UINT _WindowHeight;
 	UINT _WindowWidth;
 

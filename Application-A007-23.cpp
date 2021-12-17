@@ -1,4 +1,4 @@
-﻿#include "Application.h"
+#include "Application.h"
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -97,8 +97,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	objCar = OBJLoader::Load("car.obj", _pd3dDevice);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
-	//Application::HeightMapLoad("Heightmap.bmp");
-	Application::CreatGrid(128, 128, 128, 128, "Heightmap.bmp");
+	Application::CreatGrid(128, 128, 128, 128);
 
 	return S_OK;
 }
@@ -883,67 +882,12 @@ void Application::Draw()
 	_pSwapChain->Present(0, 0);
 }
 
-HRESULT Application::CreatGrid(float rows, float columns, float width, float depth, char* filename)
+HRESULT Application::CreatGrid(float rows, float columns, float width, float depth)
 {
 	HRESULT hr;
 
-
-	std::ifstream inFile;
-
-	BITMAPFILEHEADER bitmapFileHeader;
-	BITMAPINFOHEADER bitmapInfoHeader;
-
-	int imageSize, index;
-	unsigned char height;
-
-	inFile.open(filename);
-
-	inFile.read((char*)&bitmapFileHeader, sizeof(bitmapFileHeader));
-	inFile.read((char*)&bitmapInfoHeader, sizeof(bitmapInfoHeader));
-
-	m_rows = bitmapInfoHeader.biWidth;
-	m_columns = bitmapInfoHeader.biHeight;
-
-	imageSize = m_rows * m_columns * 3;
-
-	unsigned char* bitmapImage = new unsigned char[imageSize];
-
-	inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
-
-	inFile.read((char*)bitmapImage, imageSize);
-
-	inFile.close();
-
-	heightMap = new XMFLOAT3[m_rows * m_columns];
-
-	int p = 0;
-
-	float heightFactor = 10.0f;
-
-	for (int j = 0; j < m_columns; j++)
-	{
-		for (int i = 0; i < m_rows; i++)
-		{
-			height = bitmapImage[p];
-
-			index = (m_columns * j) + i;
-
-			heightMap[index].x = (float)i;
-			heightMap[index].y = (float)height / heightFactor;
-			heightMap[index].z = (float)j;
-
-			p += 3;
-		}
-	}
-
-	delete[] bitmapImage;
-	bitmapImage = 0;
-
-
-
 	m_rows = rows;
 	m_columns = columns;
-
 	m_depth = depth;
 	m_width = width;
 
@@ -956,8 +900,8 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	dx = m_width / (m_columns - 1);
 	dz = m_depth / (m_rows - 1);
 
-	du = 1.0f / (m_columns - 1);
-	dv = 1.0f / (m_rows - 1);
+	 du = 1.0f / (m_columns - 1);
+	 dv = 1.0f / (m_rows - 1);
 
 	std::vector<SimpleVertex> v(m_totalVertices);
 
@@ -966,7 +910,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	{
 		for (int j = 0; j < m_columns; j++)
 		{
-			v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx,, (0.5 * m_depth) - (float)i * dz);
+			v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx, 0.0, (0.5 * m_depth) - (float)i * dz);
 			v[i * m_columns + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
 			v[i * m_columns + j].TexC.x = j * du;
@@ -976,7 +920,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	}
 
 	std::vector<WORD> indices(m_totalIndices * 3);
-
+	//SHRT_MAX
 	int k = 0;
 	// Index Generation
 	for (UINT i = 0; i < m_rows - 1; i++)
@@ -1030,61 +974,3 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 
 	return hr;
 }
-
-//bool Application::HeightMapLoad(char* filename)
-//{
-//	std::ifstream inFile;
-//
-//	BITMAPFILEHEADER bitmapFileHeader;
-//	BITMAPINFOHEADER bitmapInfoHeader;
-//
-//	int imageSize, index;
-//	unsigned char height;
-//
-//	inFile.open(filename);
-//
-//	inFile.read((char*)&bitmapFileHeader,sizeof(bitmapFileHeader));
-//	inFile.read((char*)&bitmapInfoHeader, sizeof(bitmapInfoHeader));
-//	
-//	m_rows = bitmapInfoHeader.biWidth;
-//	m_columns = bitmapInfoHeader.biHeight;
-//
-//	imageSize = m_rows * m_columns * 3;
-//
-//	unsigned char* bitmapImage = new unsigned char[imageSize];
-//
-//	inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
-//
-//	inFile.read((char*)bitmapImage, imageSize);
-//
-//	inFile.close();
-//
-//	heightMap = new XMFLOAT3[m_rows * m_columns];
-//
-//	int k = 0;
-//
-//	float heightFactor = 10.0f;
-//
-//	for (int j = 0; j < m_columns; j++)
-//	{
-//		for (int i = 0; i < m_rows; i++)
-//		{
-//			height = bitmapImage[k];
-//
-//			index = (m_columns * j) + i;
-//
-//			heightMap[index].x = (float)i;
-//			heightMap[index].y = (float)height / heightFactor;
-//			heightMap[index].z = (float)j;
-//
-//			k += 3;
-//		}
-//	}
-//
-//	delete[] bitmapImage;
-//	bitmapImage = 0;
-//
-//	return true;
-//}
-
-
