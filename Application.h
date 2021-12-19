@@ -14,6 +14,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+
 using namespace DirectX;
 
 struct ConstantBuffer
@@ -108,10 +109,10 @@ private:
 	float rotationX;
 	XMMATRIX carMatrix;
 	// Terrain
-	int m_rows;
+	UINT m_rows;
 	UINT m_columns;
 	int m_totalCells;
-	UINT m_totalIndices;
+	UINT m_totalFaces;
 	int m_totalVertices;
 	int m_depth;
 	int m_width;
@@ -123,7 +124,8 @@ private:
 	float dv;
 	// Height map
 	XMFLOAT3* heightMap;
-
+	UINT terrainWidth;
+	UINT terrainHeight;
 private:
 	HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 	HRESULT InitDevice();
@@ -135,10 +137,10 @@ private:
 	HRESULT InitPyramidVertexBuffer();
 	HRESULT InitPyramidIndexBuffer();
 	HRESULT CreatGrid(float rows, float columns, float width, float depth, char* filename);
-	/*bool HeightMapLoad(char* filename);*/
+	bool LoadHeightMap(char* filename);
+
 	UINT _WindowHeight;
 	UINT _WindowWidth;
-
 public:
 	Application();
 	~Application();

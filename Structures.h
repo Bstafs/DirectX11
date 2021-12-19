@@ -19,10 +19,3 @@ struct SimpleVertex
 		return memcmp((void*)this, (void*)&other, sizeof(SimpleVertex)) > 0;
 	};
 };
-
-struct HeightMapInfo
-{
-	int terrainWidth;
-	int terrainheight;
-	XMFLOAT3* heightMap;
-};

@@ -98,7 +98,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
 	//Application::HeightMapLoad("Heightmap.bmp");
-	Application::CreatGrid(128, 128, 128, 128, "Heightmap.bmp");
+	Application::CreatGrid(128, 128, 128, 128, "Heightmap.BMP");
 
 	return S_OK;
 }
@@ -149,9 +149,9 @@ HRESULT Application::InitShadersAndInputLayout()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	UINT numElements = ARRAYSIZE(layout);
@@ -876,7 +876,7 @@ void Application::Draw()
 	world = XMLoadFloat4x4(&terrain);
 	cb.mWorld = XMMatrixTranspose(world);
 	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(m_totalIndices, 0, 0);
+	_pImmediateContext->DrawIndexed(m_totalFaces, 0, 0);
 
 	// Present our back buffer to our front buffer
 	//
@@ -888,45 +888,52 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	HRESULT hr;
 
 
-	std::ifstream inFile;
-
+	//std::ifstream inFile;
+	FILE* fileptr;
 	BITMAPFILEHEADER bitmapFileHeader;
 	BITMAPINFOHEADER bitmapInfoHeader;
 
 	int imageSize, index;
 	unsigned char height;
 
-	inFile.open(filename);
+	//inFile.open(filename);
+	fileptr = fopen(filename, "rb");
 
-	inFile.read((char*)&bitmapFileHeader, sizeof(bitmapFileHeader));
-	inFile.read((char*)&bitmapInfoHeader, sizeof(bitmapInfoHeader));
+	//inFile.read((char*)&bitmapFileHeader, sizeof(BITMAPFILEHEADER));
+	//inFile.read((char*)&bitmapInfoHeader, sizeof(BITMAPINFOHEADER));
 
-	m_rows = bitmapInfoHeader.biWidth;
-	m_columns = bitmapInfoHeader.biHeight;
+	fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, fileptr);
+	fread(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, fileptr);
 
-	imageSize = m_rows * m_columns * 3;
+	terrainWidth = bitmapInfoHeader.biWidth;
+	terrainHeight = bitmapInfoHeader.biHeight;
+
+	imageSize = terrainWidth * terrainHeight * 3;
 
 	unsigned char* bitmapImage = new unsigned char[imageSize];
 
-	inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
+	//inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
+	fseek(fileptr, bitmapFileHeader.bfOffBits, SEEK_SET);
 
-	inFile.read((char*)bitmapImage, imageSize);
+	//inFile.read((char*)bitmapImage, imageSize);
+	fread(bitmapImage, 1, imageSize, fileptr);
 
-	inFile.close();
+	//inFile.close();
+	fclose(fileptr);
 
-	heightMap = new XMFLOAT3[m_rows * m_columns];
+	heightMap = new XMFLOAT3[terrainWidth * terrainHeight];
 
 	int p = 0;
 
-	float heightFactor = 10.0f;
+	float heightFactor = 20.0f;
 
-	for (int j = 0; j < m_columns; j++)
+	for (int j = 0; j < terrainHeight; j++)
 	{
-		for (int i = 0; i < m_rows; i++)
+		for (int i = 0; i < terrainWidth; i++)
 		{
 			height = bitmapImage[p];
 
-			index = (m_columns * j) + i;
+			index = (terrainHeight * j) + i;
 
 			heightMap[index].x = (float)i;
 			heightMap[index].y = (float)height / heightFactor;
@@ -939,7 +946,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	delete[] bitmapImage;
 	bitmapImage = 0;
 
-
+	//Application::LoadHeightMap("Heightmap.BMP");
 
 	m_rows = rows;
 	m_columns = columns;
@@ -950,7 +957,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	m_rows = m_rows - 1;
 	m_columns = m_columns - 1;
 	m_totalCells = (m_rows - 1) * (m_columns - 1);
-	m_totalIndices = (m_rows - 1) * (m_columns - 1) * 2 * 6;
+	m_totalFaces = (m_rows - 1) * (m_columns - 1) * 2 * 6;
 	m_totalVertices = m_rows * m_columns;
 
 	dx = m_width / (m_columns - 1);
@@ -966,7 +973,8 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	{
 		for (int j = 0; j < m_columns; j++)
 		{
-			v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx,, (0.5 * m_depth) - (float)i * dz);
+			//v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx, heightMap[i*m_columns+j].y, (0.5 * m_depth) - (float)i * dz);
+			v[i * m_columns + j].Pos = heightMap[i * m_columns + j];
 			v[i * m_columns + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
 			v[i * m_columns + j].TexC.x = j * du;
@@ -975,7 +983,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 		}
 	}
 
-	std::vector<WORD> indices(m_totalIndices * 3);
+	std::vector<WORD> indices(m_totalFaces * 3);
 
 	int k = 0;
 	// Index Generation
@@ -1028,56 +1036,141 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	if (FAILED(hr))
 		return hr;
 
+	//Normals
+
+	//Now we will compute the normals for each vertex using normal averaging
+	std::vector<XMFLOAT3> tempNormal;
+
+	//normalized and unnormalized normals
+	XMFLOAT3 unnormalized = XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+	//Used to get vectors (sides) from the position of the verts
+	float vecX, vecY, vecZ;
+
+	//Two edges of our triangle
+	XMVECTOR edge1 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMVECTOR edge2 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+
+	//Compute face normals
+	for (int i = 0; i < m_totalFaces; ++i)
+	{
+		//Get the vector describing one edge of our triangle (edge 0,2)
+		vecX = v[indices[(i * 3)]].Pos.x - v[indices[(i * 3) + 2]].Pos.x;
+		vecY = v[indices[(i * 3)]].Pos.y - v[indices[(i * 3) + 2]].Pos.y;
+		vecZ = v[indices[(i * 3)]].Pos.z - v[indices[(i * 3) + 2]].Pos.z;
+		edge1 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our first edge
+
+		//Get the vector describing another edge of our triangle (edge 2,1)
+		vecX = v[indices[(i * 3) + 2]].Pos.x - v[indices[(i * 3) + 1]].Pos.x;
+		vecY = v[indices[(i * 3) + 2]].Pos.y - v[indices[(i * 3) + 1]].Pos.y;
+		vecZ = v[indices[(i * 3) + 2]].Pos.z - v[indices[(i * 3) + 1]].Pos.z;
+		edge2 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our second edge
+
+		//Cross multiply the two edge vectors to get the un-normalized face normal
+		XMStoreFloat3(&unnormalized, XMVector3Cross(edge1, edge2));
+		tempNormal.push_back(unnormalized);            //Save unormalized normal (for normal averaging)
+	}
+
+	//Compute vertex normals (normal Averaging)
+	XMVECTOR normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	int facesUsing = 0;
+	float tX;
+	float tY;
+	float tZ;
+
+	//Go through each vertex
+	for (int i = 0; i < m_totalVertices; ++i)
+	{
+		//Check which triangles use this vertex
+		for (int j = 0; j < m_totalFaces; ++j)
+		{
+			if (indices[j * 3] == i ||
+				indices[(j * 3) + 1] == i ||
+				indices[(j * 3) + 2] == i)
+			{
+				tX = XMVectorGetX(normalSum) + tempNormal[j].x;
+				tY = XMVectorGetY(normalSum) + tempNormal[j].y;
+				tZ = XMVectorGetZ(normalSum) + tempNormal[j].z;
+
+				normalSum = XMVectorSet(tX, tY, tZ, 0.0f);    //If a face is using the vertex, add the unormalized face normal to the normalSum
+				facesUsing++;
+			}
+		}
+
+		//Get the actual normal by dividing the normalSum by the number of faces sharing the vertex
+		normalSum = normalSum / facesUsing;
+
+		//Normalize the normalSum vector
+		normalSum = XMVector3Normalize(normalSum);
+
+		//Store the normal in our current vertex
+		v[i].Normal.x = XMVectorGetX(normalSum);
+		v[i].Normal.y = XMVectorGetY(normalSum);
+		v[i].Normal.z = XMVectorGetZ(normalSum);
+
+		//Clear normalSum and facesUsing for next vertex
+		normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+		facesUsing = 0;
+	}
+
+
 	return hr;
 }
 
-//bool Application::HeightMapLoad(char* filename)
+//bool Application::LoadHeightMap(char* filename)
 //{
-//	std::ifstream inFile;
-//
+//	//std::ifstream inFile;
+//	FILE* fileptr;
 //	BITMAPFILEHEADER bitmapFileHeader;
 //	BITMAPINFOHEADER bitmapInfoHeader;
 //
 //	int imageSize, index;
 //	unsigned char height;
 //
-//	inFile.open(filename);
+//	//inFile.open(filename);
+//	fileptr = fopen(filename, "rb");
 //
-//	inFile.read((char*)&bitmapFileHeader,sizeof(bitmapFileHeader));
-//	inFile.read((char*)&bitmapInfoHeader, sizeof(bitmapInfoHeader));
-//	
-//	m_rows = bitmapInfoHeader.biWidth;
-//	m_columns = bitmapInfoHeader.biHeight;
+//	//inFile.read((char*)&bitmapFileHeader, sizeof(BITMAPFILEHEADER));
+//	//inFile.read((char*)&bitmapInfoHeader, sizeof(BITMAPINFOHEADER));
 //
-//	imageSize = m_rows * m_columns * 3;
+//	fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, fileptr);
+//	fread(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, fileptr);
+//
+//	terrainWidth = bitmapInfoHeader.biWidth;
+//	terrainHeight = bitmapInfoHeader.biHeight;
+//
+//	imageSize = terrainWidth * terrainHeight * 3;
 //
 //	unsigned char* bitmapImage = new unsigned char[imageSize];
 //
-//	inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
+//	//inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
+//	fseek(fileptr, bitmapFileHeader.bfOffBits, SEEK_SET);
 //
-//	inFile.read((char*)bitmapImage, imageSize);
+//	//inFile.read((char*)bitmapImage, imageSize);
+//	fread(bitmapImage, 1, imageSize, fileptr);
 //
-//	inFile.close();
+//	//inFile.close();
+//	fclose(fileptr);
 //
-//	heightMap = new XMFLOAT3[m_rows * m_columns];
+//	heightMap = new XMFLOAT3[terrainWidth * terrainHeight];
 //
-//	int k = 0;
+//	int p = 0;
 //
-//	float heightFactor = 10.0f;
+//	float heightFactor = 20.0f;
 //
-//	for (int j = 0; j < m_columns; j++)
+//	for (int j = 0; j < terrainHeight; j++)
 //	{
-//		for (int i = 0; i < m_rows; i++)
+//		for (int i = 0; i < terrainWidth; i++)
 //		{
-//			height = bitmapImage[k];
+//			height = bitmapImage[p];
 //
-//			index = (m_columns * j) + i;
+//			index = (terrainHeight * j) + i;
 //
 //			heightMap[index].x = (float)i;
 //			heightMap[index].y = (float)height / heightFactor;
 //			heightMap[index].z = (float)j;
 //
-//			k += 3;
+//			p += 3;
 //		}
 //	}
 //
