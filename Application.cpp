@@ -149,9 +149,9 @@ HRESULT Application::InitShadersAndInputLayout()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	UINT numElements = ARRAYSIZE(layout);
@@ -566,7 +566,7 @@ HRESULT Application::InitDevice()
 	currentPosZ = 10.0f;
 	currentPosX = 0.0f;
 	rotationX = 0.0f;
-	carPosition = XMFLOAT3(currentPosX,-10.0f,currentPosZ);
+	carPosition = XMFLOAT3(currentPosX,-5.0f,currentPosZ);
 
 	// Rasterizer Structure For Wire Frame
 	D3D11_RASTERIZER_DESC wfdesc;
@@ -870,6 +870,8 @@ void Application::Draw()
 	_pImmediateContext->DrawIndexed(objCar.IndexCount, 0, 0);
 
 	//Terrain
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
+	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pgridVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pgridIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
@@ -946,7 +948,6 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	delete[] bitmapImage;
 	bitmapImage = 0;
 
-	//Application::LoadHeightMap("Heightmap.BMP");
 
 	m_rows = rows;
 	m_columns = columns;
@@ -973,8 +974,8 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	{
 		for (int j = 0; j < m_columns; j++)
 		{
-			//v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx, heightMap[i*m_columns+j].y, (0.5 * m_depth) - (float)i * dz);
-			v[i * m_columns + j].Pos = heightMap[i * m_columns + j];
+			v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx, heightMap[i*m_columns+j].y, (0.5 * m_depth) - (float)i * dz);
+			//v[i * m_columns + j].Pos = heightMap[i * m_columns + j];
 			v[i * m_columns + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
 			v[i * m_columns + j].TexC.x = j * du;
@@ -1038,146 +1039,81 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 
 	//Normals
 
-	//Now we will compute the normals for each vertex using normal averaging
-	std::vector<XMFLOAT3> tempNormal;
+	////Now we will compute the normals for each vertex using normal averaging
+	//std::vector<XMFLOAT3> tempNormal;
 
-	//normalized and unnormalized normals
-	XMFLOAT3 unnormalized = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	////normalized and unnormalized normals
+	//XMFLOAT3 unnormalized = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
-	//Used to get vectors (sides) from the position of the verts
-	float vecX, vecY, vecZ;
+	////Used to get vectors (sides) from the position of the verts
+	//float vecX, vecY, vecZ;
 
-	//Two edges of our triangle
-	XMVECTOR edge1 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	XMVECTOR edge2 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	////Two edges of our triangle
+	//XMVECTOR edge1 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//XMVECTOR edge2 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 
-	//Compute face normals
-	for (int i = 0; i < m_totalFaces; ++i)
-	{
-		//Get the vector describing one edge of our triangle (edge 0,2)
-		vecX = v[indices[(i * 3)]].Pos.x - v[indices[(i * 3) + 2]].Pos.x;
-		vecY = v[indices[(i * 3)]].Pos.y - v[indices[(i * 3) + 2]].Pos.y;
-		vecZ = v[indices[(i * 3)]].Pos.z - v[indices[(i * 3) + 2]].Pos.z;
-		edge1 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our first edge
+	////Compute face normals
+	//for (int i = 0; i < m_totalFaces; ++i)
+	//{
+	//	//Get the vector describing one edge of our triangle (edge 0,2)
+	//	vecX = v[indices[(i * 3)]].Pos.x - v[indices[(i * 3) + 2]].Pos.x;
+	//	vecY = v[indices[(i * 3)]].Pos.y - v[indices[(i * 3) + 2]].Pos.y;
+	//	vecZ = v[indices[(i * 3)]].Pos.z - v[indices[(i * 3) + 2]].Pos.z;
+	//	edge1 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our first edge
 
-		//Get the vector describing another edge of our triangle (edge 2,1)
-		vecX = v[indices[(i * 3) + 2]].Pos.x - v[indices[(i * 3) + 1]].Pos.x;
-		vecY = v[indices[(i * 3) + 2]].Pos.y - v[indices[(i * 3) + 1]].Pos.y;
-		vecZ = v[indices[(i * 3) + 2]].Pos.z - v[indices[(i * 3) + 1]].Pos.z;
-		edge2 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our second edge
+	//	//Get the vector describing another edge of our triangle (edge 2,1)
+	//	vecX = v[indices[(i * 3) + 2]].Pos.x - v[indices[(i * 3) + 1]].Pos.x;
+	//	vecY = v[indices[(i * 3) + 2]].Pos.y - v[indices[(i * 3) + 1]].Pos.y;
+	//	vecZ = v[indices[(i * 3) + 2]].Pos.z - v[indices[(i * 3) + 1]].Pos.z;
+	//	edge2 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our second edge
 
-		//Cross multiply the two edge vectors to get the un-normalized face normal
-		XMStoreFloat3(&unnormalized, XMVector3Cross(edge1, edge2));
-		tempNormal.push_back(unnormalized);            //Save unormalized normal (for normal averaging)
-	}
+	//	//Cross multiply the two edge vectors to get the un-normalized face normal
+	//	XMStoreFloat3(&unnormalized, XMVector3Cross(edge1, edge2));
+	//	tempNormal.push_back(unnormalized);            //Save unormalized normal (for normal averaging)
+	//}
 
-	//Compute vertex normals (normal Averaging)
-	XMVECTOR normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	int facesUsing = 0;
-	float tX;
-	float tY;
-	float tZ;
+	////Compute vertex normals (normal Averaging)
+	//XMVECTOR normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//int facesUsing = 0;
+	//float tX;
+	//float tY;
+	//float tZ;
 
-	//Go through each vertex
-	for (int i = 0; i < m_totalVertices; ++i)
-	{
-		//Check which triangles use this vertex
-		for (int j = 0; j < m_totalFaces; ++j)
-		{
-			if (indices[j * 3] == i ||
-				indices[(j * 3) + 1] == i ||
-				indices[(j * 3) + 2] == i)
-			{
-				tX = XMVectorGetX(normalSum) + tempNormal[j].x;
-				tY = XMVectorGetY(normalSum) + tempNormal[j].y;
-				tZ = XMVectorGetZ(normalSum) + tempNormal[j].z;
+	////Go through each vertex
+	//for (int i = 0; i < m_totalVertices; ++i)
+	//{
+	//	//Check which triangles use this vertex
+	//	for (int j = 0; j < m_totalFaces; ++j)
+	//	{
+	//		if (indices[j * 3] == i ||
+	//			indices[(j * 3) + 1] == i ||
+	//			indices[(j * 3) + 2] == i)
+	//		{
+	//			tX = XMVectorGetX(normalSum) + tempNormal[j].x;
+	//			tY = XMVectorGetY(normalSum) + tempNormal[j].y;
+	//			tZ = XMVectorGetZ(normalSum) + tempNormal[j].z;
 
-				normalSum = XMVectorSet(tX, tY, tZ, 0.0f);    //If a face is using the vertex, add the unormalized face normal to the normalSum
-				facesUsing++;
-			}
-		}
+	//			normalSum = XMVectorSet(tX, tY, tZ, 0.0f);    //If a face is using the vertex, add the unormalized face normal to the normalSum
+	//			facesUsing++;
+	//		}
+	//	}
 
-		//Get the actual normal by dividing the normalSum by the number of faces sharing the vertex
-		normalSum = normalSum / facesUsing;
+	//	//Get the actual normal by dividing the normalSum by the number of faces sharing the vertex
+	//	normalSum = normalSum / facesUsing;
 
-		//Normalize the normalSum vector
-		normalSum = XMVector3Normalize(normalSum);
+	//	//Normalize the normalSum vector
+	//	normalSum = XMVector3Normalize(normalSum);
 
-		//Store the normal in our current vertex
-		v[i].Normal.x = XMVectorGetX(normalSum);
-		v[i].Normal.y = XMVectorGetY(normalSum);
-		v[i].Normal.z = XMVectorGetZ(normalSum);
+	//	//Store the normal in our current vertex
+	//	v[i].Normal.x = XMVectorGetX(normalSum);
+	//	v[i].Normal.y = XMVectorGetY(normalSum);
+	//	v[i].Normal.z = XMVectorGetZ(normalSum);
 
-		//Clear normalSum and facesUsing for next vertex
-		normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-		facesUsing = 0;
-	}
+	//	//Clear normalSum and facesUsing for next vertex
+	//	normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	//	facesUsing = 0;
+	/*}*/
 
 
 	return hr;
 }
-
-//bool Application::LoadHeightMap(char* filename)
-//{
-//	//std::ifstream inFile;
-//	FILE* fileptr;
-//	BITMAPFILEHEADER bitmapFileHeader;
-//	BITMAPINFOHEADER bitmapInfoHeader;
-//
-//	int imageSize, index;
-//	unsigned char height;
-//
-//	//inFile.open(filename);
-//	fileptr = fopen(filename, "rb");
-//
-//	//inFile.read((char*)&bitmapFileHeader, sizeof(BITMAPFILEHEADER));
-//	//inFile.read((char*)&bitmapInfoHeader, sizeof(BITMAPINFOHEADER));
-//
-//	fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, fileptr);
-//	fread(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, fileptr);
-//
-//	terrainWidth = bitmapInfoHeader.biWidth;
-//	terrainHeight = bitmapInfoHeader.biHeight;
-//
-//	imageSize = terrainWidth * terrainHeight * 3;
-//
-//	unsigned char* bitmapImage = new unsigned char[imageSize];
-//
-//	//inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
-//	fseek(fileptr, bitmapFileHeader.bfOffBits, SEEK_SET);
-//
-//	//inFile.read((char*)bitmapImage, imageSize);
-//	fread(bitmapImage, 1, imageSize, fileptr);
-//
-//	//inFile.close();
-//	fclose(fileptr);
-//
-//	heightMap = new XMFLOAT3[terrainWidth * terrainHeight];
-//
-//	int p = 0;
-//
-//	float heightFactor = 20.0f;
-//
-//	for (int j = 0; j < terrainHeight; j++)
-//	{
-//		for (int i = 0; i < terrainWidth; i++)
-//		{
-//			height = bitmapImage[p];
-//
-//			index = (terrainHeight * j) + i;
-//
-//			heightMap[index].x = (float)i;
-//			heightMap[index].y = (float)height / heightFactor;
-//			heightMap[index].z = (float)j;
-//
-//			p += 3;
-//		}
-//	}
-//
-//	delete[] bitmapImage;
-//	bitmapImage = 0;
-//
-//	return true;
-//}
-
-
