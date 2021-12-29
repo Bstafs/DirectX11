@@ -35,7 +35,7 @@ cbuffer ConstantBuffer : register( b0 )
 struct VS_INPUT
 {
     float4 Pos : POSITION;
-    float2 Tex : TEXCOORD0;
+    float2 Tex : TEXCOORD;
 };
 
 
@@ -44,7 +44,7 @@ struct VS_OUTPUT
     float4 Pos : SV_POSITION;
     float3 Norm : NORMAL;
     float3 PosW : POSITION;
-    float2 Tex : TEXCOORD0;
+    float2 Tex : TEXCOORD;
     
    
 };
@@ -52,7 +52,7 @@ struct VS_OUTPUT
 //--------------------------------------------------------------------------------------
 // Vertex Shader
 //--------------------------------------------------------------------------------------
-VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL, float2 Tex : TEXCOORD0)
+VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL, float2 Tex : TEXCOORD)
 {
 
 	VS_OUTPUT output = (VS_OUTPUT) 0;
@@ -69,12 +69,6 @@ VS_OUTPUT VS(float4 Pos : POSITION, float3 NormalL : NORMAL, float2 Tex : TEXCOO
 	normalW = normalize(normalW);
     output.Norm = normalW;
 
-    // Compute Colour using Diffuse lighting only
-	
-	
-    // Commpute Specular
-  
-    
     // Texture Shader
     
     output.Tex = Tex;

@@ -25,24 +25,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 Application::Application()
 {
-	_hInst = nullptr;
-	_hWnd = nullptr;
-	_driverType = D3D_DRIVER_TYPE_NULL;
-	_featureLevel = D3D_FEATURE_LEVEL_11_0;
-	_pd3dDevice = nullptr;
-	_pImmediateContext = nullptr;
-	_pSwapChain = nullptr;
-	_pRenderTargetView = nullptr;
-	_pVertexShader = nullptr;
-	_pPixelShader = nullptr;
-	_pVertexLayout = nullptr;
-	_pCubeVertexBuffer = nullptr;
-	_pPyramidVertexBuffer = nullptr;
-	_pPlaneVertexBuffer = nullptr;
-	_pCubeIndexBuffer = nullptr;
-	_pPyramidIndexBuffer = nullptr;
-	_pPlaneIndexBuffer = nullptr;
-	_pConstantBuffer = nullptr;
+	hInst = nullptr;
+	hWnd = nullptr;
+	driverType = D3D_DRIVER_TYPE_NULL;
+	featureLevel = D3D_FEATURE_LEVEL_11_0;
+	pd3dDevice = nullptr;
+	pImmediateContext = nullptr;
+	pSwapChain = nullptr;
+	pRenderTargetView = nullptr;
+	pVertexShader = nullptr;
+	pPixelShader = nullptr;
+	pVertexLayout = nullptr;
+	pCubeVertexBuffer = nullptr;
+	pPyramidVertexBuffer = nullptr;
+	pPlaneVertexBuffer = nullptr;
+	pCubeIndexBuffer = nullptr;
+	pPyramidIndexBuffer = nullptr;
+	pPlaneIndexBuffer = nullptr;
+	pConstantBuffer = nullptr;
 	
 }
 
@@ -59,7 +59,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	}
 
 	RECT rc;
-	GetClientRect(_hWnd, &rc);
+	GetClientRect(hWnd, &rc);
 	_WindowWidth = rc.right - rc.left;
 	_WindowHeight = rc.bottom - rc.top;
 
@@ -73,13 +73,13 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	// Initialize the world matrix
 	XMStoreFloat4x4(&sphere, XMMatrixIdentity());
 
-	_camera1 = new Camera(XMFLOAT3(0.0f, 10.0f, -20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
-	_camera2 = new Camera(XMFLOAT3(0.0f, 10.0f, 20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
-	_carCamera = new Camera(XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
-	_topDownCamera = new Camera(XMFLOAT3(0.0f, 30.0f, 10.0f), XMFLOAT3(0.0f, -60.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
-	_currentCamera = _camera1;
-	_currentCamera->SetView();
-	_currentCamera->SetProjection();
+	pCamera1 = new Camera(XMFLOAT3(0.0f, 10.0f, -20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 10000.0f);
+	pCamera2 = new Camera(XMFLOAT3(0.0f, 10.0f, 20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 10000.0f);
+	pCarCamera = new Camera(XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 10000.0f);
+	pTopDownCamera = new Camera(XMFLOAT3(0.0f, 30.0f, 10.0f), XMFLOAT3(0.0f, -60.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 10000.0f);
+	pCurrentCamera = pCamera1;
+	pCurrentCamera->SetView();
+	pCurrentCamera->SetProjection();
 
 	// Create the sample state
 
@@ -92,14 +92,14 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	_pd3dDevice->CreateSamplerState(&sampDesc, &_pSamplerState);
+	pd3dDevice->CreateSamplerState(&sampDesc, &pSamplerState);
 
-	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice, false);
-	objCar = OBJLoader::Load("car.obj", _pd3dDevice);
-	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
+	objPlane = OBJLoader::Load("Hercules.obj", pd3dDevice);
+	objCar = OBJLoader::Load("car.obj", pd3dDevice);
+	objSphere = OBJLoader::Load("sphere.obj", pd3dDevice, false);
 
 	//Application::HeightMapLoad("Heightmap.bmp");
-	Application::CreatGrid(128, 128, 128, 128, "Heightmap.bmp");
+	Application::CreateTerrain("Heightmap.bmp");
 
 	return S_OK;
 }
@@ -120,7 +120,7 @@ HRESULT Application::InitShadersAndInputLayout()
 	}
 
 	// Create the vertex shader
-	hr = _pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &_pVertexShader);
+	hr = pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &pVertexShader);
 
 	if (FAILED(hr))
 	{
@@ -140,7 +140,7 @@ HRESULT Application::InitShadersAndInputLayout()
 	}
 
 	// Create the pixel shader
-	hr = _pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &_pPixelShader);
+	hr = pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &pPixelShader);
 	pPSBlob->Release();
 
 	if (FAILED(hr))
@@ -150,22 +150,22 @@ HRESULT Application::InitShadersAndInputLayout()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	UINT numElements = ARRAYSIZE(layout);
 
 	// Create the input layout
-	hr = _pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
-		pVSBlob->GetBufferSize(), &_pVertexLayout);
+	hr = pd3dDevice->CreateInputLayout(layout, numElements, pVSBlob->GetBufferPointer(),
+		pVSBlob->GetBufferSize(), &pVertexLayout);
 	pVSBlob->Release();
 
 	if (FAILED(hr))
 		return hr;
 
 	// Set the input layout
-	_pImmediateContext->IASetInputLayout(_pVertexLayout);
+	pImmediateContext->IASetInputLayout(pVertexLayout);
 
 	return hr;
 }
@@ -202,7 +202,7 @@ HRESULT Application::InitCubeVertexBuffer()
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = verticesCube;
 
-	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pCubeVertexBuffer);
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pCubeVertexBuffer);
 
 
 	if (FAILED(hr))
@@ -240,7 +240,7 @@ HRESULT Application::InitPyramidVertexBuffer()
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = verticesPyramid;
 
-	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pPyramidVertexBuffer);
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pPyramidVertexBuffer);
 
 
 	if (FAILED(hr))
@@ -288,7 +288,7 @@ HRESULT Application::InitCubeIndexBuffer()
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = indicesCube;
-	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pCubeIndexBuffer);
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pCubeIndexBuffer);
 
 
 
@@ -310,7 +310,7 @@ HRESULT Application::InitPyramidIndexBuffer()
 	WORD indicesPyramid[] =
 	{
 
-		0,2,1,
+		0,2,1, // Base Square
 		1,2,3,
 
 		0,1,4, // back
@@ -334,7 +334,7 @@ HRESULT Application::InitPyramidIndexBuffer()
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = indicesPyramid;
-	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pPyramidIndexBuffer);
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pPyramidIndexBuffer);
 
 	if (FAILED(hr))
 		return hr;
@@ -363,16 +363,16 @@ HRESULT Application::InitWindow(HINSTANCE hInstance, int nCmdShow)
 		return E_FAIL;
 
 	// Create window
-	_hInst = hInstance;
+	hInst = hInstance;
 	RECT rc = { 0, 0, 1920, 1080 };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-	_hWnd = CreateWindow(L"TutorialWindowClass", L"DX11 Framework", WS_OVERLAPPEDWINDOW,
+	hWnd = CreateWindow(L"TutorialWindowClass", L"DX11 Framework", WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
 		nullptr);
-	if (!_hWnd)
+	if (!hWnd)
 		return E_FAIL;
 
-	ShowWindow(_hWnd, nCmdShow);
+	ShowWindow(hWnd, nCmdShow);
 
 	return S_OK;
 }
@@ -462,16 +462,16 @@ HRESULT Application::InitDevice()
 	sd.BufferDesc.RefreshRate.Numerator = 60;
 	sd.BufferDesc.RefreshRate.Denominator = 1;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.OutputWindow = _hWnd;
+	sd.OutputWindow = hWnd;
 	sd.SampleDesc.Count = 1;
 	sd.SampleDesc.Quality = 0;
 	sd.Windowed = TRUE;
 
 	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
 	{
-		_driverType = driverTypes[driverTypeIndex];
-		hr = D3D11CreateDeviceAndSwapChain(nullptr, _driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
-			D3D11_SDK_VERSION, &sd, &_pSwapChain, &_pd3dDevice, &_featureLevel, &_pImmediateContext);
+		driverType = driverTypes[driverTypeIndex];
+		hr = D3D11CreateDeviceAndSwapChain(nullptr, driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
+			D3D11_SDK_VERSION, &sd, &pSwapChain, &pd3dDevice, &featureLevel, &pImmediateContext);
 		if (SUCCEEDED(hr))
 			break;
 	}
@@ -483,22 +483,20 @@ HRESULT Application::InitDevice()
 
 	// Create a render target view
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = _pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+	hr = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 
 	if (FAILED(hr))
 		return hr;
 
-	hr = _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_pRenderTargetView);
+	hr = pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pRenderTargetView);
 	pBackBuffer->Release();
 
 	if (FAILED(hr))
 		return hr;
 
-	_pd3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &_depthStencilBuffer);
-
-	_pd3dDevice->CreateDepthStencilView(_depthStencilBuffer, nullptr, &_depthStencilView);
-
-	_pImmediateContext->OMSetRenderTargets(1, &_pRenderTargetView, _depthStencilView);
+	pd3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilBuffer);
+	pd3dDevice->CreateDepthStencilView(depthStencilBuffer, nullptr, &depthStencilView);
+	pImmediateContext->OMSetRenderTargets(1, &pRenderTargetView, depthStencilView);
 
 
 
@@ -511,7 +509,7 @@ HRESULT Application::InitDevice()
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
-	_pImmediateContext->RSSetViewports(1, &vp);
+	pImmediateContext->RSSetViewports(1, &vp);
 
 	InitShadersAndInputLayout();
 
@@ -523,20 +521,20 @@ HRESULT Application::InitDevice()
 	// Set vertex buffer
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pCubeVertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPlaneVertexBuffer, &stride, &offset);
+	pImmediateContext->IASetVertexBuffers(0, 1, &pCubeVertexBuffer, &stride, &offset);
+	pImmediateContext->IASetVertexBuffers(0, 1, &pPyramidVertexBuffer, &stride, &offset);
+	pImmediateContext->IASetVertexBuffers(0, 1, &pPlaneVertexBuffer, &stride, &offset);
 
 	InitCubeIndexBuffer();
 	InitPyramidIndexBuffer();
 
 
 	// Set index buffer
-	_pImmediateContext->IASetIndexBuffer(_pCubeIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-	_pImmediateContext->IASetIndexBuffer(_pPyramidVertexBuffer, DXGI_FORMAT_R16_UINT, 0);
-	_pImmediateContext->IASetIndexBuffer(_pPlaneVertexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->IASetIndexBuffer(pCubeIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->IASetIndexBuffer(pPyramidVertexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->IASetIndexBuffer(pPlaneVertexBuffer, DXGI_FORMAT_R16_UINT, 0);
 	// Set primitive topology
-	_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Create the constant buffer
 	D3D11_BUFFER_DESC bd;
@@ -545,7 +543,7 @@ HRESULT Application::InitDevice()
 	bd.ByteWidth = sizeof(ConstantBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bd.CPUAccessFlags = 0;
-	hr = _pd3dDevice->CreateBuffer(&bd, nullptr, &_pConstantBuffer);
+	hr = pd3dDevice->CreateBuffer(&bd, nullptr, &pConstantBuffer);
 	
 	//Lighting Values
 	lightDirection = XMFLOAT3(0.25f, 0.5f, 1.0f);
@@ -573,7 +571,7 @@ HRESULT Application::InitDevice()
 	ZeroMemory(&wfdesc, sizeof(D3D11_RASTERIZER_DESC));
 	wfdesc.FillMode = D3D11_FILL_WIREFRAME;
 	wfdesc.CullMode = D3D11_CULL_NONE;
-	hr = _pd3dDevice->CreateRasterizerState(&wfdesc, &_wireFrame);
+	hr = pd3dDevice->CreateRasterizerState(&wfdesc, &wireFrame);
 
 	if (FAILED(hr))
 		return hr;
@@ -582,34 +580,18 @@ HRESULT Application::InitDevice()
 	D3D11_RASTERIZER_DESC wfdesc2;
 	ZeroMemory(&wfdesc2, sizeof(D3D11_RASTERIZER_DESC));
 	wfdesc2.FillMode = D3D11_FILL_SOLID;
-	wfdesc2.CullMode = D3D11_CULL_NONE;
-	hr = _pd3dDevice->CreateRasterizerState(&wfdesc2, &_solidFrame);
+	wfdesc2.CullMode = D3D11_CULL_BACK;
+	hr = pd3dDevice->CreateRasterizerState(&wfdesc2, &solidFrame);
 
 	if (FAILED(hr))
 		return hr;
 
 	//Texture Loading
-	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Hercules_COLOR.dds", nullptr, &_pTextureHercules);
-
-		if (FAILED(hr))
-			return hr;
-
-	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Crate_COLOR.dds", nullptr, &_pTextureCrate);
-
-	if (FAILED(hr))
-		return hr;
-
-	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Sun_COLOR.dds", nullptr, &_pTextureSun);
-
-	if (FAILED(hr))
-		return hr;
-
-	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Mud_COLOR.dds", nullptr, &_pTextureMud);
-
-	if (FAILED(hr))
-		return hr;
-
-	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Surface_COLOR.dds", nullptr, &_pTextureSurface);
+	hr = CreateDDSTextureFromFile(pd3dDevice, L"Hercules_COLOR.dds", nullptr, &pTextureHercules);
+	hr = CreateDDSTextureFromFile(pd3dDevice, L"Crate_COLOR.dds", nullptr, &pTextureCrate);
+	hr = CreateDDSTextureFromFile(pd3dDevice, L"Sun_COLOR.dds", nullptr, &pTextureSun);
+	hr = CreateDDSTextureFromFile(pd3dDevice, L"Mud_COLOR.dds", nullptr, &pTextureMud);
+	hr = CreateDDSTextureFromFile(pd3dDevice, L"Surface_COLOR.dds", nullptr, &pTextureSurface);
 
 	if (FAILED(hr))
 		return hr;
@@ -628,7 +610,7 @@ HRESULT Application::InitDevice()
 		rtbd.RenderTargetWriteMask = D3D10_COLOR_WRITE_ENABLE_ALL;
 		blendDesc.AlphaToCoverageEnable = false;
 		blendDesc.RenderTarget[0] = rtbd;
-		_pd3dDevice->CreateBlendState(&blendDesc, &Transparency);
+		pd3dDevice->CreateBlendState(&blendDesc, &Transparency);
 
 		if (FAILED(hr))
 			return hr;
@@ -640,28 +622,28 @@ HRESULT Application::InitDevice()
 
 void Application::Cleanup()
 {
-	if (_pImmediateContext) _pImmediateContext->ClearState();
+	if (pImmediateContext) pImmediateContext->ClearState();
 
-	if (_pConstantBuffer) _pConstantBuffer->Release();
-	if (_pCubeVertexBuffer) _pCubeVertexBuffer->Release();
-	if (_pCubeIndexBuffer) _pCubeIndexBuffer->Release();
-	if (_pPyramidVertexBuffer) _pPyramidVertexBuffer->Release();
-	if (_pPyramidIndexBuffer) _pPyramidIndexBuffer->Release();
-	if (_pPlaneVertexBuffer) _pPlaneVertexBuffer->Release();
-	if (_pPlaneIndexBuffer) _pPlaneIndexBuffer->Release();
-	if (_pgridVertexBuffer) _pgridVertexBuffer->Release();
-	if (_pgridIndexBuffer) _pgridIndexBuffer->Release();
-	if (_pVertexLayout) _pVertexLayout->Release();
-	if (_pVertexShader) _pVertexShader->Release();
-	if (_pPixelShader) _pPixelShader->Release();
-	if (_pRenderTargetView) _pRenderTargetView->Release();
-	if (_pSwapChain) _pSwapChain->Release();
-	if (_pImmediateContext) _pImmediateContext->Release();
-	if (_pd3dDevice) _pd3dDevice->Release();
-	if (_depthStencilView) _depthStencilView->Release();
-	if (_depthStencilBuffer) _depthStencilBuffer->Release();
-	if (_wireFrame) _wireFrame->Release();
-	if (_solidFrame) _solidFrame->Release();
+	if (pConstantBuffer) pConstantBuffer->Release();
+	if (pCubeVertexBuffer) pCubeVertexBuffer->Release();
+	if (pCubeIndexBuffer) pCubeIndexBuffer->Release();
+	if (pPyramidVertexBuffer) pPyramidVertexBuffer->Release();
+	if (pPyramidIndexBuffer) pPyramidIndexBuffer->Release();
+	if (pPlaneVertexBuffer) pPlaneVertexBuffer->Release();
+	if (pPlaneIndexBuffer) pPlaneIndexBuffer->Release();
+	if (pgridVertexBuffer) pgridVertexBuffer->Release();
+	if (pgridIndexBuffer) pgridIndexBuffer->Release();
+	if (pVertexLayout) pVertexLayout->Release();
+	if (pVertexShader) pVertexShader->Release();
+	if (pPixelShader) pPixelShader->Release();
+	if (pRenderTargetView) pRenderTargetView->Release();
+	if (pSwapChain) pSwapChain->Release();
+	if (pImmediateContext) pImmediateContext->Release();
+	if (pd3dDevice) pd3dDevice->Release();
+	if (depthStencilView) depthStencilView->Release();
+	if (depthStencilBuffer) depthStencilBuffer->Release();
+	if (wireFrame) wireFrame->Release();
+	if (solidFrame) solidFrame->Release();
 	if (Transparency) Transparency->Release();
 		
 	//Continue Solid Objects
@@ -673,7 +655,7 @@ void Application::Update()
 
 	static float t = 0.0f;
 
-	if (_driverType == D3D_DRIVER_TYPE_REFERENCE)
+	if (driverType == D3D_DRIVER_TYPE_REFERENCE)
 	{
 		t += (float)XM_PI * 0.0125f;
 	}
@@ -692,7 +674,7 @@ void Application::Update()
 	gTime = t;
 
 
-	_currentCamera->Update();
+	pCurrentCamera->Update();
 
 	int speed = 0;
 
@@ -720,10 +702,24 @@ void Application::Update()
 		currentPosZ += 0.012f * cos(rotationX);
 		currentPosX += 0.012f * sin(rotationX);
 	}
+	if (GetAsyncKeyState('D') && GetAsyncKeyState(0x20))
+	{
+		rotationX += 0.0012f;
+	}
+	if (GetAsyncKeyState('A') && GetAsyncKeyState(0x20))
+	{
+		rotationX -= 0.0012f;
+	}
+	if (GetAsyncKeyState('S') && GetAsyncKeyState(0x20))
+	{
+		currentPosZ -= 0.012f * cos(rotationX);
+		currentPosX -= 0.012f * sin(rotationX);
+	}
 
-	_carCamera->SetPosition(XMFLOAT3(currentPosX - sin(rotationX), 3, currentPosZ - cos(rotationX)));
-	_carCamera->SetLookAt(XMFLOAT3(currentPosX,2.0f, currentPosZ));
-	_carCamera->SetView();
+
+	pCarCamera->SetPosition(XMFLOAT3(currentPosX - sin(rotationX), 3, currentPosZ - cos(rotationX)));
+	pCarCamera->SetLookAt(XMFLOAT3(currentPosX,3.0f, currentPosZ));
+	pCarCamera->SetView();
 
 
 
@@ -742,22 +738,22 @@ void Application::Update()
 
 	if (GetAsyncKeyState('3'))
 	{
-		_currentCamera = _camera1;
+		pCurrentCamera = pCamera1;
 	}
 	if (GetAsyncKeyState('4'))
 	{
-		_currentCamera = _camera2;
+		pCurrentCamera = pCamera2;
 	}	
 	if (GetAsyncKeyState('5'))
 	{
-		_currentCamera = _carCamera;
+		pCurrentCamera = pCarCamera;
 	}
 	if (GetAsyncKeyState('8'))
 	{
-		_currentCamera = _topDownCamera;
+		pCurrentCamera = pTopDownCamera;
 	}
-	_currentCamera->SetView();
-	_currentCamera->SetProjection();
+	pCurrentCamera->SetView();
+	pCurrentCamera->SetProjection();
 
 	if (GetAsyncKeyState('6'))
 	{
@@ -777,26 +773,26 @@ void Application::Draw()
 	// Clear the back buffer
 	//
 	float ClearColor[4] = { 0.0f, 0.125f, 0.3f, 1.0f }; // red,green,blue,alpha
-	_pImmediateContext->ClearRenderTargetView(_pRenderTargetView, ClearColor);
-	_pImmediateContext->ClearDepthStencilView(_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	pImmediateContext->ClearRenderTargetView(pRenderTargetView, ClearColor);
+	pImmediateContext->ClearDepthStencilView(depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	XMMATRIX world = XMLoadFloat4x4(&sphere);
-	XMMATRIX view = XMLoadFloat4x4(_currentCamera->GetView());
-	XMMATRIX projection = XMLoadFloat4x4(_currentCamera->GetProjection());
+	XMMATRIX view = XMLoadFloat4x4(pCurrentCamera->GetView());
+	XMMATRIX projection = XMLoadFloat4x4(pCurrentCamera->GetProjection());
 	//
 	// Update variables
 	//
 	ConstantBuffer cb;
 
-
+	//Wireframe Modes
 
 	if (GetAsyncKeyState(0x31))
 	{
-		_pImmediateContext->RSSetState(_solidFrame);
+		pImmediateContext->RSSetState(solidFrame);
 	}
 	else if (GetAsyncKeyState(0x32))
 	{
-		_pImmediateContext->RSSetState(_wireFrame);
+		pImmediateContext->RSSetState(wireFrame);
 	}
 
 
@@ -819,96 +815,98 @@ void Application::Draw()
 	UINT stride = sizeof(SimpleVertex);
 	UINT offset = 0;
 
-	_pImmediateContext->IASetVertexBuffers(0, 1, &objSphere.VertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(objSphere.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	pImmediateContext->IASetVertexBuffers(0, 1, &objSphere.VertexBuffer, &stride, &offset);
+	pImmediateContext->IASetIndexBuffer(objSphere.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
 	if (isTransparent == false)
 	{
 		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-		_pImmediateContext->OMSetBlendState(Transparency, blendFactor, 0xffffffff);
+		pImmediateContext->OMSetBlendState(Transparency, blendFactor, 0xffffffff);
 	}
 	if (isTransparent == true)
 	{
 		float blendFactor2[] = { 0.9f, 0.9f, 0.9f, 1.0f };
-		_pImmediateContext->OMSetBlendState(Transparency, blendFactor2, 0xffffffff);
+		pImmediateContext->OMSetBlendState(Transparency, blendFactor2, 0xffffffff);
 	}
 	//
 	// Renders a triangle
 	//
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureSun);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
-	_pImmediateContext->VSSetShader(_pVertexShader, nullptr, 0);
-	_pImmediateContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
-	_pImmediateContext->PSSetConstantBuffers(0, 1, &_pConstantBuffer);
-	_pImmediateContext->PSSetShader(_pPixelShader, nullptr, 0);
-	_pImmediateContext->DrawIndexed(objSphere.IndexCount, 0, 0);
+	pImmediateContext->PSSetShaderResources(0, 1, &pTextureSun);
+	pImmediateContext->PSSetSamplers(0, 1, &pSamplerState);
+	pImmediateContext->VSSetShader(pVertexShader, nullptr, 0);
+	pImmediateContext->VSSetConstantBuffers(0, 1, &pConstantBuffer);
+	pImmediateContext->PSSetConstantBuffers(0, 1, &pConstantBuffer);
+	pImmediateContext->PSSetShader(pPixelShader, nullptr, 0);
+	pImmediateContext->DrawIndexed(objSphere.IndexCount, 0, 0);
 
 
 	// Pyramid
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pPyramidVertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(_pPyramidIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	pImmediateContext->PSSetShaderResources(0, 1, &pTextureCrate);
+	pImmediateContext->PSSetSamplers(0, 1, &pSamplerState);
+	pImmediateContext->IASetVertexBuffers(0, 1, &pPyramidVertexBuffer, &stride, &offset);
+	pImmediateContext->IASetIndexBuffer(pPyramidIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
 	world = XMLoadFloat4x4(&pyramid);
 	cb.mWorld = XMMatrixTranspose(world);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(18, 0, 0);
+	pImmediateContext->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	pImmediateContext->DrawIndexed(18, 0, 0);
 
 	//Cube
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pCubeVertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(_pCubeIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->PSSetShaderResources(0, 1, &pTextureCrate);
+	pImmediateContext->PSSetSamplers(0, 1, &pSamplerState);
+	pImmediateContext->IASetVertexBuffers(0, 1, &pCubeVertexBuffer, &stride, &offset);
+	pImmediateContext->IASetIndexBuffer(pCubeIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	world = XMLoadFloat4x4(&cube);
 	cb.mWorld = XMMatrixTranspose(world);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(36, 0, 0);
+	pImmediateContext->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	pImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Hercules Plane
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureHercules);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
-	_pImmediateContext->IASetVertexBuffers(0, 1, &objPlane.VertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(objPlane.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->PSSetShaderResources(0, 1, &pTextureHercules);
+	pImmediateContext->PSSetSamplers(0, 1, &pSamplerState);
+	pImmediateContext->IASetVertexBuffers(0, 1, &objPlane.VertexBuffer, &stride, &offset);
+	pImmediateContext->IASetIndexBuffer(objPlane.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	world = XMLoadFloat4x4(&hercules);
 	cb.mWorld = XMMatrixTranspose(world);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(objPlane.IndexCount, 0, 0);
+	pImmediateContext->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	pImmediateContext->DrawIndexed(objPlane.IndexCount, 0, 0);
 
 	//Car
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
-	_pImmediateContext->IASetVertexBuffers(0, 1, &objCar.VertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(objCar.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->PSSetShaderResources(0, 1, &pTextureCrate);
+	pImmediateContext->PSSetSamplers(0, 1, &pSamplerState);
+	pImmediateContext->IASetVertexBuffers(0, 1, &objCar.VertexBuffer, &stride, &offset);
+	pImmediateContext->IASetIndexBuffer(objCar.IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	world = XMLoadFloat4x4(&car);
 	cb.mWorld = XMMatrixTranspose(world);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(objCar.IndexCount, 0, 0);
+	pImmediateContext->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	pImmediateContext->DrawIndexed(objCar.IndexCount, 0, 0);
 
 	//Terrain
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureMud);
-	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
-	_pImmediateContext->IASetVertexBuffers(0, 1, &_pgridVertexBuffer, &stride, &offset);
-	_pImmediateContext->IASetIndexBuffer(_pgridIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	pImmediateContext->PSSetShaderResources(0, 1, &pTextureMud);
+	pImmediateContext->PSSetSamplers(0, 1, &pSamplerState);
+	pImmediateContext->IASetVertexBuffers(0, 1, &pgridVertexBuffer, &stride, &offset);
+	pImmediateContext->IASetIndexBuffer(pgridIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	world = XMLoadFloat4x4(&terrain);
 	cb.mWorld = XMMatrixTranspose(world);
-	_pImmediateContext->UpdateSubresource(_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	_pImmediateContext->DrawIndexed(m_totalFaces, 0, 0);
+	pImmediateContext->UpdateSubresource(pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	pImmediateContext->DrawIndexed(totalFaces, 0, 0);
 
 	// Present our back buffer to our front buffer
 	//
-	_pSwapChain->Present(0, 0);
+	pSwapChain->Present(0, 0);
 }
 
-HRESULT Application::CreatGrid(float rows, float columns, float width, float depth, char* filename)
+HRESULT Application::CreateTerrain(char* filename)
 {
 	HRESULT hr;
+
+	//Bitmap Loading
 
 	FILE* fileptr;
 	BITMAPFILEHEADER bitmapFileHeader;
@@ -917,21 +915,26 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	int imageSize, index;
 	unsigned char height;
 
+	//Open The File
 	fileptr = fopen(filename, "rb");
 
+	// Read the size of the bitmap
 	fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, fileptr);
 	fread(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, fileptr);
 
+	//Set the terrain width and height the size of the image loading in.
 	terrainWidth = bitmapInfoHeader.biWidth;
 	terrainHeight = bitmapInfoHeader.biHeight;
 
 	imageSize = terrainHeight * ((terrainWidth * 3) + 1);
 
+	//Creating an array to create memory for the bitmap image data.
 	unsigned char* bitmapImage = new unsigned char[imageSize];
 
+	//Moving to the beginning of the bitmap data.
 	fseek(fileptr, bitmapFileHeader.bfOffBits, SEEK_SET);
 
-	//inFile.read((char*)bitmapImage, imageSize);
+	//Reading the bitmap data
 	fread(bitmapImage, 1, imageSize, fileptr);
 
 	fclose(fileptr);
@@ -960,75 +963,60 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	delete[] bitmapImage;
 	bitmapImage = 0;
 
-	m_rows = rows;
-	m_columns = columns;
+	// Grid Generation
 
-	m_depth = depth;
-	m_width = width;
+	rows = terrainWidth;
+	columns = terrainHeight;
 
-	m_rows = m_rows - 1;
-	m_columns = m_columns - 1;
-	m_totalCells = (m_rows - 1) * (m_columns - 1);
-	m_totalFaces = (m_rows - 1) * (m_columns - 1) * 2 * 6;
-	m_totalVertices = m_rows * m_columns;
+	depth = columns;
+	width = rows;
 
-	dx = m_width / (m_columns - 1);
-	dz = m_depth / (m_rows - 1);
+	rows = rows - 1;
+	columns = columns - 1;
+	totalCells = (rows - 1) * (columns - 1);
+	totalFaces = (rows - 1) * (columns - 1) * 2 * 6;
+	totalVertices = rows * columns;
 
-	du = 1.0f / (m_columns - 1);
-	dv = 1.0f / (m_rows - 1);
+	dx = width / (columns - 1);
+	dz = depth / (rows - 1);
 
-	std::vector<SimpleVertex> v(m_totalVertices);
+	du = 1.0f / (columns - 1);
+	dv = 1.0f / (rows - 1);
+
+	std::vector<SimpleVertex> v(totalVertices);
 
 	// Vertex Generation
-	for (int i = 0; i < m_rows; i++)
+	for (int i = 0; i < rows; i++)
 	{
-		for (int j = 0; j < m_columns; j++)
+		for (int j = 0; j < columns; j++)
 		{
-			v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx, heightMap[i*m_columns+j].y, (0.5 * m_depth) - (float)i * dz);
-			v[i * m_columns + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+			v[i * columns + j].Pos = XMFLOAT3((-0.5 * width) + (float)j * dx, heightMap[i*columns+j].y, (0.5 * depth) - (float)i * dz);
+			v[i * columns + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
 		
-
-			v[i * m_columns + j].TexC.x = j * du;
-			v[i * m_columns + j].TexC.y = i * dv;
+			v[i * columns + j].TexC.x = j * du;
+			v[i * columns + j].TexC.y = i * dv;
 
 		}
 	}
 
-	std::vector<WORD> indices(m_totalFaces * 3);
+	std::vector<WORD> indices(totalFaces * 3);
 
 	int k = 0;
-	int texUIndex = 0;
-	int texVIndex = 0;
 	// Index Generation
-	for (UINT i = 0; i < m_rows - 1; i++)
+	for (UINT i = 0; i < rows - 1; i++)
 	{
-		for (UINT j = 0; j < m_columns -1; j++)
+		for (UINT j = 0; j < columns -1; j++)
 		{
-			indices[k] = i * m_columns + j;
-			v[i * m_columns + j].TexC = XMFLOAT2(texUIndex + 0.0f, texVIndex + 1.0f);
-			
-			indices[k + 1] = i * m_columns + j + 1;
-			v[i * m_columns + j + 1].TexC = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
-
-			indices[k + 2] = (i + 1)* m_columns + j;
-			v[(i + 1) * m_columns + j].TexC = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
-			
-			indices[k + 3] = (i + 1) * m_columns + j;
-			v[(i + 1) * m_columns + j].TexC = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
-
-			indices[k + 4] = i * m_columns + j + 1;
-			v[i * m_columns + j + 1].TexC = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
-
-			indices[k + 5] = (i + 1) * m_columns + j + 1;
-			v[(i + 1) * m_columns + j + 1].TexC = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
+			indices[k] = i * columns + j;		
+			indices[k + 1] = i * columns + j + 1;
+			indices[k + 2] = (i + 1)* columns + j;	
+			indices[k + 3] = (i + 1) * columns + j;
+			indices[k + 4] = i * columns + j + 1;
+			indices[k + 5] = (i + 1) * columns + j + 1;
 			
 			k += 6;
-
-			texUIndex++;
 		}
-		texUIndex = 0;
-		texVIndex++;
+
 	}
 
 	// Vertex Buffer
@@ -1042,7 +1030,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	D3D11_SUBRESOURCE_DATA InitData;
 	ZeroMemory(&InitData, sizeof(InitData));
 	InitData.pSysMem = &v[0];
-	hr = _pd3dDevice->CreateBuffer(&bd, &InitData, &_pgridVertexBuffer);
+	hr = pd3dDevice->CreateBuffer(&bd, &InitData, &pgridVertexBuffer);
 
 	if (FAILED(hr))
 		return hr;
@@ -1059,7 +1047,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	D3D11_SUBRESOURCE_DATA InitData2;
 	ZeroMemory(&InitData2, sizeof(InitData2));
 	InitData2.pSysMem = &indices[0];
-	hr = _pd3dDevice->CreateBuffer(&bd2, &InitData2, &_pgridIndexBuffer);
+	hr = pd3dDevice->CreateBuffer(&bd2, &InitData2, &pgridIndexBuffer);
 
 	if (FAILED(hr))
 		return hr;

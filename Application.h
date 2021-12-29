@@ -42,29 +42,29 @@ struct ConstantBuffer
 class Application
 {
 private:
-	HINSTANCE               _hInst;
-	HWND                    _hWnd;
-	D3D_DRIVER_TYPE         _driverType;
-	D3D_FEATURE_LEVEL       _featureLevel;
-	ID3D11Device*           _pd3dDevice;
-	ID3D11DeviceContext*    _pImmediateContext;
-	IDXGISwapChain*         _pSwapChain;
-	ID3D11RenderTargetView* _pRenderTargetView;
+	HINSTANCE               hInst;
+	HWND                    hWnd;
+	D3D_DRIVER_TYPE         driverType;
+	D3D_FEATURE_LEVEL       featureLevel;
+	ID3D11Device*           pd3dDevice;
+	ID3D11DeviceContext*    pImmediateContext;
+	IDXGISwapChain*         pSwapChain;
+	ID3D11RenderTargetView* pRenderTargetView;
 	//Shaders
-	ID3D11VertexShader*     _pVertexShader;
-	ID3D11PixelShader*      _pPixelShader;
-	ID3D11InputLayout*      _pVertexLayout;
+	ID3D11VertexShader*     pVertexShader;
+	ID3D11PixelShader*      pPixelShader;
+	ID3D11InputLayout*      pVertexLayout;
 	//Buffers
-	ID3D11Buffer*           _pCubeVertexBuffer;
-	ID3D11Buffer*           _pCubeIndexBuffer;
-	ID3D11Buffer*           _pPyramidVertexBuffer;
-	ID3D11Buffer*           _pPyramidIndexBuffer;
-	ID3D11Buffer*           _pPlaneVertexBuffer;
-	ID3D11Buffer*           _pPlaneIndexBuffer;
-	ID3D11Buffer*           _pgridVertexBuffer;
-	ID3D11Buffer*           _pgridIndexBuffer;
-	ID3D11Buffer*           _pConstantBuffer;
-	// World Object - Positions, Rotations and Scale
+	ID3D11Buffer*           pCubeVertexBuffer;
+	ID3D11Buffer*           pCubeIndexBuffer;
+	ID3D11Buffer*           pPyramidVertexBuffer;
+	ID3D11Buffer*           pPyramidIndexBuffer;
+	ID3D11Buffer*           pPlaneVertexBuffer;
+	ID3D11Buffer*           pPlaneIndexBuffer;
+	ID3D11Buffer*           pgridVertexBuffer;
+	ID3D11Buffer*           pgridIndexBuffer;
+	ID3D11Buffer*           pConstantBuffer;
+	// World Object
 	XMFLOAT4X4              sphere, pyramid, cube,hercules,car,terrain;
 	//Lighting
 	XMFLOAT3                lightDirection;
@@ -77,18 +77,18 @@ private:
 	float                   specularPower;
 	XMFLOAT4                eyePos;
 	//Depth Buffers
-	ID3D11DepthStencilView* _depthStencilView;
-	ID3D11Texture2D*        _depthStencilBuffer;
-	ID3D11RasterizerState*  _wireFrame; 
-	ID3D11RasterizerState*  _solidFrame;
+	ID3D11DepthStencilView* depthStencilView;
+	ID3D11Texture2D*        depthStencilBuffer;
+	ID3D11RasterizerState*  wireFrame; 
+	ID3D11RasterizerState*  solidFrame;
 	//SamplerState
-	ID3D11SamplerState* _pSamplerState = nullptr;
+	ID3D11SamplerState* pSamplerState = nullptr;
 	//Textures
-	ID3D11ShaderResourceView* _pTextureCrate = nullptr;
-	ID3D11ShaderResourceView* _pTextureHercules = nullptr;
-	ID3D11ShaderResourceView* _pTextureSun = nullptr;
-	ID3D11ShaderResourceView* _pTextureMud = nullptr;
-	ID3D11ShaderResourceView* _pTextureSurface = nullptr;
+	ID3D11ShaderResourceView* pTextureCrate = nullptr;
+	ID3D11ShaderResourceView* pTextureHercules = nullptr;
+	ID3D11ShaderResourceView* pTextureSun = nullptr;
+	ID3D11ShaderResourceView* pTextureMud = nullptr;
+	ID3D11ShaderResourceView* pTextureSurface = nullptr;
 	//Objects
 	MeshData                objPlane;
 	MeshData                objSphere;
@@ -96,11 +96,11 @@ private:
 	//Time
 	float gTime;
 	// Camera
-	Camera* _currentCamera;
-	Camera* _camera1;
-	Camera* _camera2;
-	Camera* _carCamera;
-	Camera* _topDownCamera;
+	Camera* pCurrentCamera;
+	Camera* pCamera1;
+	Camera* pCamera2;
+	Camera* pCarCamera;
+	Camera* pTopDownCamera;
 	// Blending
 	ID3D11BlendState* Transparency;
 	bool isTransparent;
@@ -112,13 +112,13 @@ private:
 	float rotationX;
 	XMMATRIX carMatrix;
 	// Terrain
-	UINT m_rows;
-	UINT m_columns;
-	int m_totalCells;
-	UINT m_totalFaces;
-	int m_totalVertices;
-	int m_depth;
-	int m_width;
+	UINT rows;
+	UINT columns;
+	int totalCells;
+	UINT totalFaces;
+	int totalVertices;
+	int depth;
+	int width;
 	// Width & Depth
 	float dx;
 	float dz;
@@ -139,8 +139,7 @@ private:
 	HRESULT InitCubeIndexBuffer();
 	HRESULT InitPyramidVertexBuffer();
 	HRESULT InitPyramidIndexBuffer();
-	HRESULT CreatGrid(float rows, float columns, float width, float depth, char* filename);
-	bool LoadHeightMap(char* filename);
+	HRESULT CreateTerrain(char* filename);
 
 	UINT _WindowHeight;
 	UINT _WindowWidth;
