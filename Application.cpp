@@ -75,8 +75,8 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 
 	_camera1 = new Camera(XMFLOAT3(0.0f, 10.0f, -20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
 	_camera2 = new Camera(XMFLOAT3(0.0f, 10.0f, 20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
-	_carCamera = new Camera(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
-	_topDownCamera = new Camera(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
+	_carCamera = new Camera(XMFLOAT3(0.0f, 10.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
+	_topDownCamera = new Camera(XMFLOAT3(0.0f, 30.0f, 10.0f), XMFLOAT3(0.0f, -60.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
 	_currentCamera = _camera1;
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
@@ -726,6 +726,8 @@ void Application::Update()
 	_carCamera->SetLookAt(XMFLOAT3(currentPosX,2.0f, currentPosZ));
 	_carCamera->SetView();
 
+
+
 	XMMATRIX translation;
 	XMMATRIX rotation;
 	translation = XMMatrixIdentity();
@@ -751,7 +753,10 @@ void Application::Update()
 	{
 		_currentCamera = _carCamera;
 	}
-
+	if (GetAsyncKeyState('8'))
+	{
+		_currentCamera = _topDownCamera;
+	}
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
 
