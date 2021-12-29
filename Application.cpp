@@ -76,6 +76,7 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	_camera1 = new Camera(XMFLOAT3(0.0f, 10.0f, -20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
 	_camera2 = new Camera(XMFLOAT3(0.0f, 10.0f, 20.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
 	_carCamera = new Camera(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
+	_topDownCamera = new Camera(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), _WindowWidth, _WindowHeight, 0.01f, 1000.0f);
 	_currentCamera = _camera1;
 	_currentCamera->SetView();
 	_currentCamera->SetProjection();
@@ -93,12 +94,12 @@ HRESULT Application::Initialise(HINSTANCE hInstance, int nCmdShow)
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	_pd3dDevice->CreateSamplerState(&sampDesc, &_pSamplerState);
 
-	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice);
+	objPlane = OBJLoader::Load("Hercules.obj", _pd3dDevice, false);
 	objCar = OBJLoader::Load("car.obj", _pd3dDevice);
 	objSphere = OBJLoader::Load("sphere.obj", _pd3dDevice, false);
 
 	//Application::HeightMapLoad("Heightmap.bmp");
-	Application::CreatGrid(128, 128, 128, 128, "Heightmap.BMP");
+	Application::CreatGrid(128, 128, 128, 128, "Heightmap.bmp");
 
 	return S_OK;
 }
@@ -604,6 +605,16 @@ HRESULT Application::InitDevice()
 	if (FAILED(hr))
 		return hr;
 
+	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Mud_COLOR.dds", nullptr, &_pTextureMud);
+
+	if (FAILED(hr))
+		return hr;
+
+	hr = CreateDDSTextureFromFile(_pd3dDevice, L"Surface_COLOR.dds", nullptr, &_pTextureSurface);
+
+	if (FAILED(hr))
+		return hr;
+
 		D3D11_BLEND_DESC blendDesc;
 		ZeroMemory(&blendDesc, sizeof(blendDesc));
 		D3D11_RENDER_TARGET_BLEND_DESC rtbd;
@@ -684,6 +695,8 @@ void Application::Update()
 
 	_currentCamera->Update();
 
+	int speed = 0;
+
 	if (GetAsyncKeyState('W'))
 	{
 		currentPosZ += 0.002f * cos(rotationX);
@@ -702,8 +715,15 @@ void Application::Update()
 	{
 		rotationX += 0.0002f;
 	}
-	_carCamera->SetPosition(XMFLOAT3(currentPosX - sin(rotationX), 1.4, currentPosZ - cos(rotationX)));
-	_carCamera->SetLookAt(XMFLOAT3(currentPosX,0.0f, currentPosZ));
+
+	if (GetAsyncKeyState('W') && GetAsyncKeyState(0x20))
+	{
+		currentPosZ += 0.012f * cos(rotationX);
+		currentPosX += 0.012f * sin(rotationX);
+	}
+
+	_carCamera->SetPosition(XMFLOAT3(currentPosX - sin(rotationX), 3, currentPosZ - cos(rotationX)));
+	_carCamera->SetLookAt(XMFLOAT3(currentPosX,2.0f, currentPosZ));
 	_carCamera->SetView();
 
 	XMMATRIX translation;
@@ -711,9 +731,6 @@ void Application::Update()
 	translation = XMMatrixIdentity();
 	translation	= XMMatrixTranslation(currentPosX, carPosition.y,currentPosZ);
 	rotation = XMMatrixRotationY(rotationX);
-
-	//direction.x = 1 * cos(rotationAngle);
-	//direction.z = 1 * sin(rotationAngle);
 
 	XMStoreFloat4x4(&sphere, XMMatrixRotationX(t) * XMMatrixRotationY(t) * XMMatrixTranslation(0.0f, 0.0f, 0.0f)); // Sphere
 	XMStoreFloat4x4(&pyramid, XMMatrixTranslation(5.0f, 0.0f, 0.0f) * XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixRotationY(t)); // Pyramid
@@ -870,7 +887,7 @@ void Application::Draw()
 	_pImmediateContext->DrawIndexed(objCar.IndexCount, 0, 0);
 
 	//Terrain
-	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureCrate);
+	_pImmediateContext->PSSetShaderResources(0, 1, &_pTextureMud);
 	_pImmediateContext->PSSetSamplers(0, 1, &_pSamplerState);
 	_pImmediateContext->IASetVertexBuffers(0, 1, &_pgridVertexBuffer, &stride, &offset);
 	_pImmediateContext->IASetIndexBuffer(_pgridIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
@@ -889,8 +906,6 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 {
 	HRESULT hr;
 
-
-	//std::ifstream inFile;
 	FILE* fileptr;
 	BITMAPFILEHEADER bitmapFileHeader;
 	BITMAPINFOHEADER bitmapInfoHeader;
@@ -898,11 +913,7 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	int imageSize, index;
 	unsigned char height;
 
-	//inFile.open(filename);
 	fileptr = fopen(filename, "rb");
-
-	//inFile.read((char*)&bitmapFileHeader, sizeof(BITMAPFILEHEADER));
-	//inFile.read((char*)&bitmapInfoHeader, sizeof(BITMAPINFOHEADER));
 
 	fread(&bitmapFileHeader, sizeof(BITMAPFILEHEADER), 1, fileptr);
 	fread(&bitmapInfoHeader, sizeof(BITMAPINFOHEADER), 1, fileptr);
@@ -910,17 +921,15 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	terrainWidth = bitmapInfoHeader.biWidth;
 	terrainHeight = bitmapInfoHeader.biHeight;
 
-	imageSize = terrainWidth * terrainHeight * 3;
+	imageSize = terrainHeight * ((terrainWidth * 3) + 1);
 
 	unsigned char* bitmapImage = new unsigned char[imageSize];
 
-	//inFile.seekg(bitmapFileHeader.bfOffBits, SEEK_SET);
 	fseek(fileptr, bitmapFileHeader.bfOffBits, SEEK_SET);
 
 	//inFile.read((char*)bitmapImage, imageSize);
 	fread(bitmapImage, 1, imageSize, fileptr);
 
-	//inFile.close();
 	fclose(fileptr);
 
 	heightMap = new XMFLOAT3[terrainWidth * terrainHeight];
@@ -933,21 +942,19 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	{
 		for (int i = 0; i < terrainWidth; i++)
 		{
+			index = (terrainWidth * (terrainHeight - 1 - j)) + i;
+
 			height = bitmapImage[p];
 
-			index = (terrainHeight * j) + i;
-
-			heightMap[index].x = (float)i;
 			heightMap[index].y = (float)height / heightFactor;
-			heightMap[index].z = (float)j;
 
 			p += 3;
 		}
+		p++;
 	}
 
 	delete[] bitmapImage;
 	bitmapImage = 0;
-
 
 	m_rows = rows;
 	m_columns = columns;
@@ -975,8 +982,8 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 		for (int j = 0; j < m_columns; j++)
 		{
 			v[i * m_columns + j].Pos = XMFLOAT3((-0.5 * m_width) + (float)j * dx, heightMap[i*m_columns+j].y, (0.5 * m_depth) - (float)i * dz);
-			//v[i * m_columns + j].Pos = heightMap[i * m_columns + j];
 			v[i * m_columns + j].Normal = XMFLOAT3(0.0f, 1.0f, 0.0f);
+		
 
 			v[i * m_columns + j].TexC.x = j * du;
 			v[i * m_columns + j].TexC.y = i * dv;
@@ -987,21 +994,37 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 	std::vector<WORD> indices(m_totalFaces * 3);
 
 	int k = 0;
+	int texUIndex = 0;
+	int texVIndex = 0;
 	// Index Generation
 	for (UINT i = 0; i < m_rows - 1; i++)
 	{
 		for (UINT j = 0; j < m_columns -1; j++)
 		{
 			indices[k] = i * m_columns + j;
+			v[i * m_columns + j].TexC = XMFLOAT2(texUIndex + 0.0f, texVIndex + 1.0f);
+			
 			indices[k + 1] = i * m_columns + j + 1;
-			indices[k + 2] = (i + 1)* m_columns + j;
+			v[i * m_columns + j + 1].TexC = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
 
+			indices[k + 2] = (i + 1)* m_columns + j;
+			v[(i + 1) * m_columns + j].TexC = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+			
 			indices[k + 3] = (i + 1) * m_columns + j;
+			v[(i + 1) * m_columns + j].TexC = XMFLOAT2(texUIndex + 0.0f, texVIndex + 0.0f);
+
 			indices[k + 4] = i * m_columns + j + 1;
+			v[i * m_columns + j + 1].TexC = XMFLOAT2(texUIndex + 1.0f, texVIndex + 1.0f);
+
 			indices[k + 5] = (i + 1) * m_columns + j + 1;
+			v[(i + 1) * m_columns + j + 1].TexC = XMFLOAT2(texUIndex + 1.0f, texVIndex + 0.0f);
 			
 			k += 6;
+
+			texUIndex++;
 		}
+		texUIndex = 0;
+		texVIndex++;
 	}
 
 	// Vertex Buffer
@@ -1036,83 +1059,6 @@ HRESULT Application::CreatGrid(float rows, float columns, float width, float dep
 
 	if (FAILED(hr))
 		return hr;
-
-	//Normals
-
-	////Now we will compute the normals for each vertex using normal averaging
-	//std::vector<XMFLOAT3> tempNormal;
-
-	////normalized and unnormalized normals
-	//XMFLOAT3 unnormalized = XMFLOAT3(0.0f, 0.0f, 0.0f);
-
-	////Used to get vectors (sides) from the position of the verts
-	//float vecX, vecY, vecZ;
-
-	////Two edges of our triangle
-	//XMVECTOR edge1 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	//XMVECTOR edge2 = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-
-	////Compute face normals
-	//for (int i = 0; i < m_totalFaces; ++i)
-	//{
-	//	//Get the vector describing one edge of our triangle (edge 0,2)
-	//	vecX = v[indices[(i * 3)]].Pos.x - v[indices[(i * 3) + 2]].Pos.x;
-	//	vecY = v[indices[(i * 3)]].Pos.y - v[indices[(i * 3) + 2]].Pos.y;
-	//	vecZ = v[indices[(i * 3)]].Pos.z - v[indices[(i * 3) + 2]].Pos.z;
-	//	edge1 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our first edge
-
-	//	//Get the vector describing another edge of our triangle (edge 2,1)
-	//	vecX = v[indices[(i * 3) + 2]].Pos.x - v[indices[(i * 3) + 1]].Pos.x;
-	//	vecY = v[indices[(i * 3) + 2]].Pos.y - v[indices[(i * 3) + 1]].Pos.y;
-	//	vecZ = v[indices[(i * 3) + 2]].Pos.z - v[indices[(i * 3) + 1]].Pos.z;
-	//	edge2 = XMVectorSet(vecX, vecY, vecZ, 0.0f);    //Create our second edge
-
-	//	//Cross multiply the two edge vectors to get the un-normalized face normal
-	//	XMStoreFloat3(&unnormalized, XMVector3Cross(edge1, edge2));
-	//	tempNormal.push_back(unnormalized);            //Save unormalized normal (for normal averaging)
-	//}
-
-	////Compute vertex normals (normal Averaging)
-	//XMVECTOR normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	//int facesUsing = 0;
-	//float tX;
-	//float tY;
-	//float tZ;
-
-	////Go through each vertex
-	//for (int i = 0; i < m_totalVertices; ++i)
-	//{
-	//	//Check which triangles use this vertex
-	//	for (int j = 0; j < m_totalFaces; ++j)
-	//	{
-	//		if (indices[j * 3] == i ||
-	//			indices[(j * 3) + 1] == i ||
-	//			indices[(j * 3) + 2] == i)
-	//		{
-	//			tX = XMVectorGetX(normalSum) + tempNormal[j].x;
-	//			tY = XMVectorGetY(normalSum) + tempNormal[j].y;
-	//			tZ = XMVectorGetZ(normalSum) + tempNormal[j].z;
-
-	//			normalSum = XMVectorSet(tX, tY, tZ, 0.0f);    //If a face is using the vertex, add the unormalized face normal to the normalSum
-	//			facesUsing++;
-	//		}
-	//	}
-
-	//	//Get the actual normal by dividing the normalSum by the number of faces sharing the vertex
-	//	normalSum = normalSum / facesUsing;
-
-	//	//Normalize the normalSum vector
-	//	normalSum = XMVector3Normalize(normalSum);
-
-	//	//Store the normal in our current vertex
-	//	v[i].Normal.x = XMVectorGetX(normalSum);
-	//	v[i].Normal.y = XMVectorGetY(normalSum);
-	//	v[i].Normal.z = XMVectorGetZ(normalSum);
-
-	//	//Clear normalSum and facesUsing for next vertex
-	//	normalSum = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-	//	facesUsing = 0;
-	/*}*/
 
 
 	return hr;

@@ -87,6 +87,8 @@ private:
 	ID3D11ShaderResourceView* _pTextureCrate = nullptr;
 	ID3D11ShaderResourceView* _pTextureHercules = nullptr;
 	ID3D11ShaderResourceView* _pTextureSun = nullptr;
+	ID3D11ShaderResourceView* _pTextureMud = nullptr;
+	ID3D11ShaderResourceView* _pTextureSurface = nullptr;
 	//Objects
 	MeshData                objPlane;
 	MeshData                objSphere;
@@ -98,6 +100,7 @@ private:
 	Camera* _camera1;
 	Camera* _camera2;
 	Camera* _carCamera;
+	Camera* _topDownCamera;
 	// Blending
 	ID3D11BlendState* Transparency;
 	bool isTransparent;
