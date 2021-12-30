@@ -943,7 +943,7 @@ HRESULT Application::CreateTerrain(char* filename)
 
 	int p = 0;
 
-	float heightFactor = 20.0f;
+	float heightFactor = 10.0f;
 
 	for (int j = 0; j < terrainHeight; j++)
 	{
