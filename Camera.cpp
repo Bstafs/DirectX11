@@ -74,7 +74,7 @@ XMFLOAT4X4* Camera::GetProjection()
 
 void Camera::SetProjection()
 {
-	XMStoreFloat4x4(&_projection, XMMatrixPerspectiveFovLH(XM_PIDIV2, _windowWidth / (FLOAT)_windowHeight, 0.01f, 100.0f));
+	XMStoreFloat4x4(&_projection, XMMatrixPerspectiveFovLH(XM_PIDIV2, _windowWidth / (FLOAT)_windowHeight, _nearDepth, _farDepth));
 }
 
 void Camera::CombinedViewaAndProjection()
